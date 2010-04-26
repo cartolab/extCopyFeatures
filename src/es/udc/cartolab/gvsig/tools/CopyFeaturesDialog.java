@@ -1,24 +1,34 @@
 package es.udc.cartolab.gvsig.tools;
 
 import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Locale;
+import java.util.HashMap;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.border.Border;
+
+import net.miginfocom.swing.MigLayout;
 
 import com.hardcode.driverManager.DriverLoadException;
+import com.hardcode.gdbms.engine.values.BooleanValue;
+import com.hardcode.gdbms.engine.values.DoubleValue;
+import com.hardcode.gdbms.engine.values.IntValue;
+import com.hardcode.gdbms.engine.values.StringValue;
 import com.hardcode.gdbms.engine.values.Value;
 import com.hardcode.gdbms.engine.values.ValueFactory;
 import com.iver.andami.PluginServices;
@@ -26,7 +36,6 @@ import com.iver.andami.messages.NotificationManager;
 import com.iver.andami.ui.mdiManager.IWindow;
 import com.iver.andami.ui.mdiManager.WindowInfo;
 import com.iver.cit.gvsig.CADExtension;
-import com.iver.cit.gvsig.fmap.DriverException;
 import com.iver.cit.gvsig.fmap.MapControl;
 import com.iver.cit.gvsig.fmap.ViewPort;
 import com.iver.cit.gvsig.fmap.core.DefaultFeature;
@@ -36,6 +45,7 @@ import com.iver.cit.gvsig.fmap.edition.DefaultRowEdited;
 import com.iver.cit.gvsig.fmap.edition.EditionEvent;
 import com.iver.cit.gvsig.fmap.edition.IRowEdited;
 import com.iver.cit.gvsig.fmap.edition.VectorialEditableAdapter;
+import com.iver.cit.gvsig.fmap.layers.FBitSet;
 import com.iver.cit.gvsig.fmap.layers.FLayers;
 import com.iver.cit.gvsig.fmap.layers.FLyrVect;
 import com.iver.cit.gvsig.fmap.layers.ReadableVectorial;
@@ -51,26 +61,25 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 	private View view = null;
 	FLayers layers = null;
 
-	String [][] codeResultSet;
-
-	String [] fields = new String[3];
-	String [] pkvalues = new String[1];
-
 	private String message = null;
 
 	private WindowInfo viewInfo = null;
 	private JButton cancelButton = null;
 	private JButton okButton = null;
+	private JButton matchFileButton  = null;
 	private JPanel panelButtons = null;
-	private JComboBox inputLayerCB = null;
+	private JComboBox sourceLayerCB = null;
 	private JComboBox targetLayerCB = null;
+	private JTextField matchFileTF = null;
+
+	private JCheckBox onlySelectedChB = null;
 
 	public WindowInfo getWindowInfo() {
 		if (viewInfo == null) {
 			viewInfo = new WindowInfo(WindowInfo.MODALDIALOG | WindowInfo.RESIZABLE | WindowInfo.PALETTE);
-			viewInfo.setTitle(PluginServices.getText(this, "copyinputdata"));
-			viewInfo.setWidth(500);
-			viewInfo.setHeight(100);
+			viewInfo.setTitle(PluginServices.getText(this, "copyfeatures"));
+			viewInfo.setWidth(300);
+			viewInfo.setHeight(200);
 		}
 		return viewInfo;
 	}
@@ -78,13 +87,9 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 	public CopyFeaturesDialog() {
 		super();
 		try {
-			fields[0] = "capa";
-			fields[1] = "codigo";
-			fields[2] = "altura";
-
-			pkvalues[0] = "capa";
 			initialize();
 		} catch (Exception e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -127,6 +132,9 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 
 	private void initialize() throws Exception {
 
+		MigLayout layout = new MigLayout("center", "[][70%][]", "[][]10[]10[]20[bottom]");
+		super.setLayout(layout);
+
 		try {
 			view = (View) PluginServices.getMDIManager().getActiveWindow();
 
@@ -141,73 +149,64 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 					return;
 				}
 
-				GridBagLayout layout = new GridBagLayout();
-				GridBagConstraints c = new GridBagConstraints();
+				JLabel sourceLayerLabel = new JLabel(PluginServices.getText(this, "SourceLayer"));
+				super.add(sourceLayerLabel);
 
-				//ROW 1: input layers combobox
-				c.weightx = 1.0;
-				c.insets = new Insets(0,12,0,12);
-				c.ipady = 5;
-				//c.fill = GridBagConstraints.BOTH;
-				c.anchor = GridBagConstraints.WEST;
-
-				super.setLayout(layout);
-
-				JLabel inputLayerLabel = new JLabel(PluginServices.getText(this, "inputLayer"));
-				layout.setConstraints(inputLayerLabel, c);
-				super.add(inputLayerLabel, c);
-
-				c.fill = GridBagConstraints.BOTH;
-				c.anchor = GridBagConstraints.WEST;
-
-				inputLayerCB = new JComboBox();
-
+				sourceLayerCB = new JComboBox();
 				for (int i=layers.getLayersCount()-1; i >= 0; i--) {
-					inputLayerCB.addItem(layers.getLayer(i).getName());
+					sourceLayerCB.addItem(layers.getLayer(i).getName());
 				}
-				layout.setConstraints(inputLayerCB, c);
-				super.add(inputLayerCB);
-
-				//ROW 2: target layers combobox
-				c.gridy = 3;
-				super.setLayout(layout);
+				super.add(sourceLayerCB, "span 2, growx, wrap");
 
 				JLabel targetLayerLabel = new JLabel(PluginServices.getText(this, "TargetLayer"));
-				layout.setConstraints(targetLayerLabel, c);
-				super.add(targetLayerLabel, c);
-
-				c.fill = GridBagConstraints.BOTH;
-				c.anchor = GridBagConstraints.WEST;
+				super.add(targetLayerLabel);
 
 				targetLayerCB = new JComboBox();
-				boolean notGpsLayerInTOC = true;
-				for (int i=codeResultSet.length-1; i >= 0; i--) {
+				for (int i=layers.getLayersCount()-1; i >= 0; i--) {
 					targetLayerCB.addItem(layers.getLayer(i).getName());
 				}
 
-				if (targetLayerCB.getItemCount() > 0){
+				if (targetLayerCB.getItemCount() > 1){
 					targetLayerCB.setSelectedIndex(1);
 				}
 
-				layout.setConstraints(targetLayerCB, c);
-				super.add(targetLayerCB);
+				super.add(targetLayerCB, "span 2, growx, wrap");
 
-				// TODO GET CSV list of the identifiers and put it on a CBox
+				JPanel matchPanel = new JPanel(new MigLayout("center", "[][70%][]",""));
+				Border border = BorderFactory.createTitledBorder(PluginServices.getText(this, "Matching"));
+				matchPanel.setBorder(border);
 
-				//TODO Only selected / all feaures
+				// TODO More options
+				// TODO Only selected / all feaures
+				//				JRadioButton radioAllAttrib = new JRadioButton(PluginServices.getText(this, "All attributes"));
+				//				JRadioButton radioSameAttrib = new JRadioButton(PluginServices.getText(this, "Add same attributes"));
+				//				ButtonGroup group = new ButtonGroup();
 
+				JLabel matchFileLabel = new JLabel(PluginServices.getText(this, "MatchFile"));
+				matchPanel.add(matchFileLabel);
 
-				//ROW 3: ok & cancel buttons
-				c.gridy=5;
-				c.gridwidth = 2;
-				c.ipady = 8;
-				c.insets = new Insets(12,0,0,0);
-				c.fill = GridBagConstraints.CENTER;
-				c.anchor = GridBagConstraints.CENTER;
+				matchFileTF = new JTextField();
+				matchFileTF.setText("");
+
+				matchPanel.add(matchFileTF, "growx");
+
+				matchFileButton = new JButton("...");
+				matchFileButton.addActionListener(this);
+				matchPanel.add(matchFileButton, "wrap");
+
+				super.add(matchPanel, "span 3, grow, wrap");
+
+				JPanel featPanel = new JPanel(new MigLayout("left"));
+				border = BorderFactory.createTitledBorder(PluginServices.getText(this, "Features"));
+				featPanel.setBorder(border);
+
+				onlySelectedChB = new JCheckBox(PluginServices.getText(this, "OnlySelected"));
+				featPanel.add(onlySelectedChB);
+
+				super.add(featPanel, "span 3, grow, wrap");
+
 				JPanel buttonPanel = getJPanelButtons();
-				layout.setConstraints(buttonPanel, c);
-
-				super.add(buttonPanel);
+				super.add(buttonPanel, "span 3, grow");
 			}
 
 			else {
@@ -220,42 +219,39 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 	}
 
 	public static void createFeature(ToggleEditing te, FLyrVect vectLayer, IGeometry feature, Value[] values) {
+
 		VectorialLayerEdited vle = (VectorialLayerEdited) CADExtension.getEditionManager().getActiveLayerEdited();
 		VectorialEditableAdapter vea = vle.getVEA();
 
 		try  {
-
 			String newFID;
-			try {
-				newFID = vea.getNewFID();
+			newFID = vea.getNewFID();
 
-				DefaultFeature df = new DefaultFeature(feature, values, newFID);
-				int index = vea.addRow(df, "_newET", EditionEvent.GRAPHIC);
-				//clearSelection();
-				ArrayList selectedRow = vle.getSelectedRow();
-				ViewPort vp = vle.getLayer().getMapContext().getViewPort();
-				BufferedImage selectionImage = new BufferedImage(vp
-						.getImageWidth(), vp.getImageHeight(),
-						BufferedImage.TYPE_INT_ARGB);
-				Graphics2D gs = selectionImage.createGraphics();
-				int inversedIndex=vea.getInversedIndex(index);
-				selectedRow.add(new DefaultRowEdited(df,
-						IRowEdited.STATUS_ADDED, inversedIndex ));
-				vea.getSelection().set(inversedIndex);
-				IGeometry geom = df.getGeometry();
-				geom.cloneGeometry().draw(gs, vp, DefaultCADTool.selectionSymbol);
-				vle.drawHandlers(geom.cloneGeometry(), gs, vp);
-				vea.setSelectionImage(selectionImage);
+			DefaultFeature df = new DefaultFeature(feature, values, newFID);
+			int index = vea.addRow(df, "_newET", EditionEvent.GRAPHIC);
+			//clearSelection();
+			ArrayList selectedRow = vle.getSelectedRow();
+			ViewPort vp = vle.getLayer().getMapContext().getViewPort();
+			BufferedImage selectionImage = new BufferedImage(vp
+					.getImageWidth(), vp.getImageHeight(),
+					BufferedImage.TYPE_INT_ARGB);
+			Graphics2D gs = selectionImage.createGraphics();
+			int inversedIndex=vea.getInversedIndex(index);
+			selectedRow.add(new DefaultRowEdited(df,
+					IRowEdited.STATUS_ADDED, inversedIndex ));
+			vea.getSelection().set(inversedIndex);
+			IGeometry geom = df.getGeometry();
+			geom.cloneGeometry().draw(gs, vp, DefaultCADTool.selectionSymbol);
+			vle.drawHandlers(geom.cloneGeometry(), gs, vp);
+			vea.setSelectionImage(selectionImage);
 
-			} catch (IOException e) {
-				//logger.debug(e);
-				NotificationManager.addError(e);
-				return;
-			}
 
 			SelectableDataSource recordset = vectLayer.getRecordset();
 			recordset.clearSelection();
 
+		} catch (IOException e) {
+			//logger.debug(e);
+			NotificationManager.addError(e);
 		}catch (DriverIOException e) {
 			NotificationManager.addError(e.getMessage(), e);
 		} catch (DriverLoadException e) {
@@ -268,122 +264,190 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 
 	}
 
-	private String my_format(double d){
 
-		NumberFormat nf = NumberFormat.getInstance(Locale.GERMAN);
-		nf.setMaximumFractionDigits(1);
-		nf.setMinimumFractionDigits(1);
+	/**
+	 *  File must have lines with:
+	 *  			TARGET_FIELDNAME = SOURCE_FIELDNAME
+	 * 
+	 *  It returns a Map<target, source> fields
+	 * 
+	 * @param filepath
+	 * @return
+	 */
+	private HashMap getMatchFieldMap(String filepath){
 
-		String number = nf.format(d);
-		number = number.replaceAll("\\.", "");
-		number = number.replaceAll(",", ".");
+		File file = new File(filepath);
+		if (!file.exists()){
+			return null;
+		}
 
-		return number;
+		HashMap<String, String> matchFields = new HashMap<String, String>();
 
+		try {
+			String line;
+			BufferedReader fileReader = new BufferedReader(new FileReader(file));
+			while ((line = fileReader.readLine())!=null) {
+				String tokens[] = line.split("=");
+				if (tokens.length == 2) {
+					String k = tokens[0].trim().toUpperCase();
+					String v = tokens[1].trim().toUpperCase();
+					if ((k.length() > 0) && (v.length() > 0)) {
+						matchFields.put(k, v);
+					}
+				}
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return matchFields;
 	}
 
-	public void copyData(String targetLayerName, String inputLayerName) {
+	public void copyData(String targetLayerName, String sourceLayerName, String match_filepath, boolean onlySelected) {
+
+		ReadableVectorial sourceFeats = null;
+		boolean error = false;
+		boolean isEdited = false;
+
+		int copyCount = 0;
 
 		es.udc.cartolab.gvsig.navtable.ToggleEditing te = new es.udc.cartolab.gvsig.navtable.ToggleEditing();
-		ReadableVectorial feats = null;
-		FLyrVect targetLayer = null;
-		boolean error = false;
+		FLyrVect sourceLayer = (FLyrVect) layers.getLayer(sourceLayerName);
+		FLyrVect targetLayer = (FLyrVect) layers.getLayer(targetLayerName);
 
 		try {
 
-			FLyrVect inputLayer = (FLyrVect) layers.getLayer(inputLayerName);
+			// Map that match target index fields with source index fields
+			HashMap<Integer, Integer> tgtSrcIdxMap = new HashMap<Integer, Integer>();
+			HashMap<String, String> matchMap = getMatchFieldMap(match_filepath);
 
-			// TODO GET IDENTIFIERS OF THE CSVs
-			SelectableDataSource inputLayerRecordset = inputLayer.getRecordset();
-			int codigoIdx = inputLayerRecordset.getFieldIndexByName("Identifica");
-			int longitudIdx = inputLayerRecordset.getFieldIndexByName("Longitud");
-			int latitudIdx = inputLayerRecordset.getFieldIndexByName("Latitud");
-			int altitudIdx = inputLayerRecordset.getFieldIndexByName("Altitud");
-			String codeField = null;
-			String zField = null;
-
-			if ((codigoIdx == -1) || (longitudIdx == -1) ||
-					(latitudIdx == -1) || (altitudIdx == -1)) {
-
-				JOptionPane.showMessageDialog(this,
-						PluginServices.getText(this, "noGPSError"),
-						"Error",
-						JOptionPane.ERROR_MESSAGE);
-
+			if (matchMap == null) {
+				error = true;
 				return;
 			}
 
-			for(int i=0; i<codeResultSet.length; i++) {
-				if (targetLayerName.compareTo(codeResultSet[i][0]) == 0) {
-					codeField = codeResultSet[i][1];
-					zField = codeResultSet[i][2];
-					break;
+			SelectableDataSource targetRecordset = targetLayer.getRecordset();
+			SelectableDataSource sourceRecordset = sourceLayer.getRecordset();
+
+			for (String tgt_field:matchMap.keySet()) {
+				tgt_field = tgt_field.toUpperCase();
+				String src_field = matchMap.get(tgt_field).toUpperCase();
+				int src_idx = sourceRecordset.getFieldIndexByName(src_field);
+				int tgt_idx = targetRecordset.getFieldIndexByName(tgt_field);
+
+				if (src_idx == -1){
+					//TODO Translate!!
+					System.out.println("El campo " + src_field + " no existe en la capa SOURCE ["+ "]");
+					continue;
 				}
+
+				if (tgt_idx == -1){
+					//TODO Translate!!
+					System.out.println("El campo " + tgt_field + " no existe en la capa TARGET ["+ "]");
+					continue;
+				}
+
+				tgtSrcIdxMap.put(tgt_idx, src_idx);
+
 			}
 
-			targetLayer = (FLyrVect) layers.getLayer(targetLayerName);
-			SelectableDataSource targetRecordset = targetLayer.getRecordset();
-			int fieldsNumber = targetRecordset.getFieldCount();
+			String[] attrNames = sourceRecordset.getFieldNames();
+			int fieldsNumber = sourceRecordset.getFieldCount();
 
 			te.startEditing(targetLayer);
+			isEdited = true;
 
-			feats = inputLayer.getSource();
-			feats.start();
+			sourceFeats = sourceLayer.getSource();
+			sourceFeats.start();
 
 
-			//TODO PUT ON TARGET ATTRIB
-			for (int i=0; i<inputLayerRecordset.getRowCount(); i++){
+			FBitSet bitset= sourceRecordset.getSelection();
 
-				IGeometry gvGeom = feats.getShape(i);
-				gvGeom.reProject(inputLayer.getProjection().getCT(inputLayer.getMapContext().getProjection()));
+			int number2copy = 0;
+			if (onlySelected){
+				number2copy =bitset.cardinality();
+			} else {
+				number2copy = (int) sourceRecordset.getRowCount();
+			}
+
+			int val = JOptionPane.showOptionDialog(this,
+					PluginServices.getText(this, "Se van a copiar " +number2copy+ " entidades de la capa \"" + sourceLayerName
+							+ "\"\n a la capa \"" + targetLayerName +"\".\n¿Desea continuar?"),
+							"Copy Features Confirmation",
+							JOptionPane.OK_CANCEL_OPTION,
+							JOptionPane.QUESTION_MESSAGE,
+							null,
+							new String[] {"Ok", "Cancelar"},
+			"Ok");
+
+			if (val != 0){
+				return;
+			}
+
+			for (int i = 0; i < sourceRecordset.getRowCount(); i++){
+
+				if (onlySelected && !bitset.get(i)){
+					continue;
+				}
+				IGeometry gvGeom = sourceFeats.getShape(i);
+				gvGeom.reProject(sourceLayer.getProjection().getCT(sourceLayer.getMapContext().getProjection()));
 
 				Value[] values = new Value[fieldsNumber];
-
-				int codeIdx = targetRecordset.getFieldIndexByName(codeField);
-				int lonIdx = targetRecordset.getFieldIndexByName("x");
-				int latIdx = targetRecordset.getFieldIndexByName("y");
-				int zIdx = targetRecordset.getFieldIndexByName(zField);
-
-				for (int j=0; j<values.length;j++) {
+				for (int j = 0;  j < values.length; j++) {
 					values[j] = ValueFactory.createNullValue();
 				}
 
-				values[codeIdx] = ValueFactory.createValue(inputLayerRecordset.getFieldValue(i, codigoIdx).toString());
-				values[lonIdx] = ValueFactory.createValue(my_format(gvGeom.toJTSGeometry().getCoordinate().x));
-				values[latIdx] = ValueFactory.createValue(my_format(gvGeom.toJTSGeometry().getCoordinate().y));
-				Double z = new Double(inputLayerRecordset.getFieldValue(i, altitudIdx).toString());
-				values[zIdx] = ValueFactory.createValue(new Double(my_format(z)));
-				String[] attrNames = targetRecordset.getFieldNames();
-
+				for (int tgtIdx:tgtSrcIdxMap.keySet()){
+					int srcIdx = tgtSrcIdxMap.get(tgtIdx);
+					Value srcValue = sourceRecordset.getFieldValue(i, srcIdx);
+					//System.out.println(srcValue + "  " + srcValue.getClass());
+					if (srcValue instanceof StringValue){
+						values[tgtIdx] = ValueFactory.createValue((String) srcValue.toString());
+					}
+					if (srcValue instanceof IntValue){
+						IntValue v = (IntValue) srcValue;
+						values[tgtIdx] = ValueFactory.createValue((Integer) v.intValue());
+					}
+					if (srcValue instanceof DoubleValue){
+						DoubleValue v = (DoubleValue) srcValue;
+						values[tgtIdx] = ValueFactory.createValue((Double) v.doubleValue());
+					}
+					if (srcValue instanceof BooleanValue){
+						BooleanValue v = (BooleanValue) srcValue;
+						values[tgtIdx] = ValueFactory.createValue((Boolean) v.getValue());
+					}
+				}
 				createFeature(te, targetLayer, gvGeom, values);
-
-				//				sqlconnector.saveSQLValues(targetLayerCB.getSelectedItem().toString(), attrNames, values);
+				copyCount++;
 			}
 
-			feats.stop();
+			sourceFeats.stop();
 
-		} catch (DriverException e) {
-			// TODO Auto-generated catch block
-			error = true;
-			e.printStackTrace();
 		} catch (com.hardcode.gdbms.engine.data.driver.DriverException e) {
-			// TODO Auto-generated catch block
 			error = true;
 			e.printStackTrace();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			error = true;
 			e.printStackTrace();
 		} finally {
 
+			if (isEdited) {
+				te.stopEditing(targetLayer, false);
+				PluginServices.getMDIManager().closeWindow(this);
+			}
+
 			if (error){
 				JOptionPane.showMessageDialog(this,
-						PluginServices.getText(this, "ERROR: Algunos puntos del GPS puede que no se hayan copiado."),
+						PluginServices.getText(this, "ERROR: Se han copiado " +copyCount+ " entidades."),
 						"Error",
 						JOptionPane.ERROR_MESSAGE);
+			} else {
+				JOptionPane.showMessageDialog(this,
+						PluginServices.getText(this, "Se han copiado "+copyCount+ " entidades."),
+						"Information",
+						JOptionPane.INFORMATION_MESSAGE);
 			}
-			te.stopEditing(targetLayer, false);
-			PluginServices.getMDIManager().closeWindow(this);
 
 		}
 
@@ -393,21 +457,31 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 
 		if (e.getSource() == okButton) {
 
-			String inputLayerName =  inputLayerCB.getSelectedItem().toString();
+			String sourceLayerName =  sourceLayerCB.getSelectedItem().toString();
 			String targetLayerName =  targetLayerCB.getSelectedItem().toString();
 
-			if (inputLayerName.equalsIgnoreCase(targetLayerName)){
+			if (sourceLayerName.equalsIgnoreCase(targetLayerName)){
 				JOptionPane.showMessageDialog(this,
 						PluginServices.getText(this, "sameLayerError"),
 						"Error",
 						JOptionPane.ERROR_MESSAGE);
 			} else {
-				copyData(targetLayerName, inputLayerName);
+				copyData(targetLayerName, sourceLayerName, matchFileTF.getText(), onlySelectedChB.isSelected());
 			}
 		}
 
 		if (e.getSource() == cancelButton) {
 			PluginServices.getMDIManager().closeWindow(this);
+		}
+
+		if (e.getSource() == matchFileButton){
+
+			JFileChooser chooser = new JFileChooser();
+			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			int returnVal = chooser.showOpenDialog(this);
+			if(returnVal == JFileChooser.APPROVE_OPTION) {
+				matchFileTF.setText(chooser.getSelectedFile().getAbsolutePath());
+			}
 		}
 	}
 
