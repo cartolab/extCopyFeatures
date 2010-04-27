@@ -347,7 +347,6 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 					System.out.println("El campo " + tgt_field + " no existe en la capa TARGET ["+ "]");
 					continue;
 				}
-
 				tgtSrcIdxMap.put(tgt_idx, src_idx);
 
 			}
@@ -360,7 +359,6 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 
 			sourceFeats = sourceLayer.getSource();
 			sourceFeats.start();
-
 
 			FBitSet bitset= sourceRecordset.getSelection();
 
@@ -399,11 +397,96 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 				}
 
 				for (int tgtIdx:tgtSrcIdxMap.keySet()){
+
 					int srcIdx = tgtSrcIdxMap.get(tgtIdx);
 					Value srcValue = sourceRecordset.getFieldValue(i, srcIdx);
-					//System.out.println(srcValue + "  " + srcValue.getClass());
-					if (srcValue instanceof StringValue){
+					int tgtType = targetRecordset.getFieldType(tgtIdx);
+
+					switch (tgtType) {
+					case java.sql.Types.VARCHAR:
 						values[tgtIdx] = ValueFactory.createValue((String) srcValue.toString());
+						break;
+					case java.sql.Types.INTEGER:
+						if (srcValue instanceof StringValue){
+							String aux = srcValue.toString().replace("\"", "");
+							try {
+								int auxInt = Integer.parseInt(aux);
+								values[tgtIdx] = ValueFactory.createValue(auxInt);
+							} catch (NumberFormatException e){
+								//TODO
+							}
+						}
+						if (srcValue instanceof IntValue){
+							IntValue v = (IntValue) srcValue;
+							values[tgtIdx] = ValueFactory.createValue((Integer) v.intValue());
+						}
+						if (srcValue instanceof DoubleValue){
+							DoubleValue v = (DoubleValue) srcValue;
+							values[tgtIdx] = ValueFactory.createValue((Integer) v.intValue());
+						}
+						if (srcValue instanceof BooleanValue){
+							BooleanValue v = (BooleanValue) srcValue;
+							if (v.getValue() == false) {
+								values[tgtIdx] = ValueFactory.createValue(0);
+							} else {
+								values[tgtIdx] = ValueFactory.createValue(1);
+							}
+						}
+					case java.sql.Types.DOUBLE:
+						if (srcValue instanceof StringValue){
+							String aux = srcValue.toString().replace("\"", "");
+							try {
+								double auxDouble = Double.parseDouble(aux);
+								values[tgtIdx] = ValueFactory.createValue(auxDouble);
+							} catch (NumberFormatException e){
+								//TODO
+							}
+						}
+						if (srcValue instanceof IntValue){
+							IntValue v = (IntValue) srcValue;
+							values[tgtIdx] = ValueFactory.createValue((Double) v.doubleValue());
+						}
+						if (srcValue instanceof DoubleValue){
+							DoubleValue v = (DoubleValue) srcValue;
+							values[tgtIdx] = ValueFactory.createValue((Double) v.doubleValue());
+						}
+						if (srcValue instanceof BooleanValue){
+							BooleanValue v = (BooleanValue) srcValue;
+							if (v.getValue() == false) {
+								values[tgtIdx] = ValueFactory.createValue(0.0);
+							} else {
+								values[tgtIdx] = ValueFactory.createValue(1.0);
+							}
+						}
+					case java.sql.Types.BOOLEAN:
+						String aux = srcValue.toString();
+						if ((aux.toUpperCase() == "FALSE") || (aux == "0") || (aux == "0.0") || (aux.toUpperCase() == "NO")){
+							values[tgtIdx] = ValueFactory.createValue(false);
+						} else {
+							values[tgtIdx] = ValueFactory.createValue(true);
+						}
+					default:
+						break;
+					}
+
+					if (srcValue instanceof StringValue){
+						switch (tgtType) {
+						case java.sql.Types.VARCHAR:
+							values[tgtIdx] = ValueFactory.createValue((String) srcValue.toString());
+							break;
+						case java.sql.Types.INTEGER:
+							String aux = srcValue.toString().replace("\"", "");
+							try {
+								int auxInt = Integer.parseInt(aux);
+								values[tgtIdx] = ValueFactory.createValue(auxInt);
+							} catch (NumberFormatException e){
+								//TODO
+							}
+							break;
+						default:
+							values[tgtIdx] = ValueFactory.createValue((String) srcValue.toString());
+							break;
+						}
 					}
 					if (srcValue instanceof IntValue){
 						IntValue v = (IntValue) srcValue;
@@ -421,7 +504,6 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 				createFeature(te, targetLayer, gvGeom, values);
 				copyCount++;
 			}
-
 			sourceFeats.stop();
 
 		} catch (com.hardcode.gdbms.engine.data.driver.DriverException e) {
