@@ -56,6 +56,7 @@ import com.iver.cit.gvsig.project.documents.view.gui.View;
 
 import es.udc.cartolab.gvsig.navtable.ToggleEditing;
 
+//TODO Implemente copy DATES
 public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListener{
 
 	private View view = null;
@@ -330,6 +331,11 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 			SelectableDataSource targetRecordset = targetLayer.getRecordset();
 			SelectableDataSource sourceRecordset = sourceLayer.getRecordset();
 
+			for (int j = 0; j < targetRecordset.getFieldCount(); j++){
+				System.out.println(j + ": " + targetRecordset.getFieldName(j) + "  -> " + targetRecordset.getFieldType(j) );
+			}
+
+
 			for (String tgt_field:matchMap.keySet()) {
 				tgt_field = tgt_field.toUpperCase();
 				String src_field = matchMap.get(tgt_field).toUpperCase();
@@ -338,13 +344,13 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 
 				if (src_idx == -1){
 					//TODO Translate!!
-					System.out.println("El campo " + src_field + " no existe en la capa SOURCE ["+ "]");
+					System.out.println("ERROR -------------> El campo " + src_field + " no existe en la capa SOURCE ["+ sourceLayerName+"]");
 					continue;
 				}
 
 				if (tgt_idx == -1){
 					//TODO Translate!!
-					System.out.println("El campo " + tgt_field + " no existe en la capa TARGET ["+ "]");
+					System.out.println("ERROR -------------> El campo " + tgt_field + " no existe en la capa TARGET ["+ targetLayerName+"]");
 					continue;
 				}
 				tgtSrcIdxMap.put(tgt_idx, src_idx);
@@ -403,9 +409,14 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 					int tgtType = targetRecordset.getFieldType(tgtIdx);
 
 					switch (tgtType) {
+					case java.sql.Types.CHAR:
+					case java.sql.Types.LONGVARCHAR:
 					case java.sql.Types.VARCHAR:
 						values[tgtIdx] = ValueFactory.createValue((String) srcValue.toString());
 						break;
+					case java.sql.Types.TINYINT:
+					case java.sql.Types.SMALLINT:
+					case java.sql.Types.BIGINT:
 					case java.sql.Types.INTEGER:
 						if (srcValue instanceof StringValue){
 							String aux = srcValue.toString().replace("\"", "");
@@ -432,6 +443,10 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 								values[tgtIdx] = ValueFactory.createValue(1);
 							}
 						}
+						break;
+					case java.sql.Types.DECIMAL:
+					case java.sql.Types.FLOAT:
+					case java.sql.Types.NUMERIC:
 					case java.sql.Types.DOUBLE:
 						if (srcValue instanceof StringValue){
 							String aux = srcValue.toString().replace("\"", "");
@@ -458,6 +473,8 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 								values[tgtIdx] = ValueFactory.createValue(1.0);
 							}
 						}
+						break;
+					case java.sql.Types.BIT:
 					case java.sql.Types.BOOLEAN:
 						String aux = srcValue.toString();
 						if ((aux.toUpperCase() == "FALSE") || (aux == "0") || (aux == "0.0") || (aux.toUpperCase() == "NO")){
@@ -465,47 +482,23 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 						} else {
 							values[tgtIdx] = ValueFactory.createValue(true);
 						}
+						break;
 					default:
 						break;
 					}
 
-					if (srcValue instanceof StringValue){
-						switch (tgtType) {
-						case java.sql.Types.VARCHAR:
-							values[tgtIdx] = ValueFactory.createValue((String) srcValue.toString());
-							break;
-						case java.sql.Types.INTEGER:
-							String aux = srcValue.toString().replace("\"", "");
-							try {
-								int auxInt = Integer.parseInt(aux);
-								values[tgtIdx] = ValueFactory.createValue(auxInt);
-							} catch (NumberFormatException e){
-								//TODO
-							}
-							break;
-						default:
-							values[tgtIdx] = ValueFactory.createValue((String) srcValue.toString());
-							break;
-						}
-					}
-					if (srcValue instanceof IntValue){
-						IntValue v = (IntValue) srcValue;
-						values[tgtIdx] = ValueFactory.createValue((Integer) v.intValue());
-					}
-					if (srcValue instanceof DoubleValue){
-						DoubleValue v = (DoubleValue) srcValue;
-						values[tgtIdx] = ValueFactory.createValue((Double) v.doubleValue());
-					}
-					if (srcValue instanceof BooleanValue){
-						BooleanValue v = (BooleanValue) srcValue;
-						values[tgtIdx] = ValueFactory.createValue((Boolean) v.getValue());
-					}
 				}
+
+				//TODO Delete that FOR
+				for (int j = 0; j < values.length; j++) {
+					System.out.println(j + "-  Type: " + values[j].getSQLType() + "   -> " + values[j].toString());
+				}
+
 				createFeature(te, targetLayer, gvGeom, values);
 				copyCount++;
+
 			}
 			sourceFeats.stop();
-
 		} catch (com.hardcode.gdbms.engine.data.driver.DriverException e) {
 			error = true;
 			e.printStackTrace();
@@ -530,7 +523,6 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 						"Information",
 						JOptionPane.INFORMATION_MESSAGE);
 			}
-
 		}
 
 	}
