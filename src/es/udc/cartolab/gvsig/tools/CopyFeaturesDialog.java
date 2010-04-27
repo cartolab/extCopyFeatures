@@ -57,6 +57,10 @@ import com.iver.cit.gvsig.project.documents.view.gui.View;
 import es.udc.cartolab.gvsig.navtable.ToggleEditing;
 
 //TODO Implemente copy DATES
+/**
+ * Copy features with attributes between layers. Type conversion is made if possible.
+ * 
+ */
 public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListener{
 
 	private View view = null;
@@ -80,7 +84,7 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 			viewInfo = new WindowInfo(WindowInfo.MODALDIALOG | WindowInfo.RESIZABLE | WindowInfo.PALETTE);
 			viewInfo.setTitle(PluginServices.getText(this, "copyfeatures"));
 			viewInfo.setWidth(300);
-			viewInfo.setHeight(200);
+			viewInfo.setHeight(250);
 		}
 		return viewInfo;
 	}
@@ -133,7 +137,7 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 
 	private void initialize() throws Exception {
 
-		MigLayout layout = new MigLayout("center", "[][70%][]", "[][]10[]10[]20[bottom]");
+		MigLayout layout = new MigLayout("center", "[][70%][]", "[][]10[]10[]15%[bottom]");
 		super.setLayout(layout);
 
 		try {
