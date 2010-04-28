@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin-config>
+	<depends plugin-name="com.iver.cit.gvsig"/>
+	<depends plugin-name="es.udc.cartolab.gvsig.navtable"/>
+	<libraries library-dir="lib"/>
+	<resourceBundle name="text"/>
+	<extensions>
+		<extension class-name="es.udc.cartolab.gvsig.toolsCopyFeatureExtension" description="Copy Feature" active="true">
+			<tool-bar name="CartoTools">
+				<action-tool icon="images/copy.png" tooltip="Copy Features"
+					action-command="CopyFeatures" position="200"/>
+			</tool-bar>
+			<menu text="CartoTools/Copy Features"
+				action-command="CopyFeatures"
+				icon="images/copy.png" position="10"/>
+		</extension>		
+	</extensions>
+</plugin-config>
