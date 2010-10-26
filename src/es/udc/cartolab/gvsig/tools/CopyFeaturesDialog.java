@@ -24,7 +24,7 @@ import javax.swing.border.Border;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.hardcode.driverManager.DriverLoadException;
+import com.hardcode.gdbms.driver.exceptions.ReadDriverException;
 import com.hardcode.gdbms.engine.values.BooleanValue;
 import com.hardcode.gdbms.engine.values.DoubleValue;
 import com.hardcode.gdbms.engine.values.IntValue;
@@ -32,15 +32,15 @@ import com.hardcode.gdbms.engine.values.StringValue;
 import com.hardcode.gdbms.engine.values.Value;
 import com.hardcode.gdbms.engine.values.ValueFactory;
 import com.iver.andami.PluginServices;
-import com.iver.andami.messages.NotificationManager;
 import com.iver.andami.ui.mdiManager.IWindow;
 import com.iver.andami.ui.mdiManager.WindowInfo;
 import com.iver.cit.gvsig.CADExtension;
+import com.iver.cit.gvsig.exceptions.expansionfile.ExpansionFileWriteException;
+import com.iver.cit.gvsig.exceptions.validate.ValidateRowException;
 import com.iver.cit.gvsig.fmap.MapControl;
 import com.iver.cit.gvsig.fmap.ViewPort;
 import com.iver.cit.gvsig.fmap.core.DefaultFeature;
 import com.iver.cit.gvsig.fmap.core.IGeometry;
-import com.iver.cit.gvsig.fmap.drivers.DriverIOException;
 import com.iver.cit.gvsig.fmap.edition.DefaultRowEdited;
 import com.iver.cit.gvsig.fmap.edition.EditionEvent;
 import com.iver.cit.gvsig.fmap.edition.IRowEdited;
@@ -223,7 +223,7 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 		}
 	}
 
-	public static void createFeature(ToggleEditing te, FLyrVect vectLayer, IGeometry feature, Value[] values) {
+	public static void createFeature(ToggleEditing te, FLyrVect vectLayer, IGeometry feature, Value[] values) throws IOException {
 
 		VectorialLayerEdited vle = (VectorialLayerEdited) CADExtension.getEditionManager().getActiveLayerEdited();
 		VectorialEditableAdapter vea = vle.getVEA();
@@ -254,18 +254,17 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 			SelectableDataSource recordset = vectLayer.getRecordset();
 			recordset.clearSelection();
 
-		} catch (IOException e) {
-			//logger.debug(e);
-			NotificationManager.addError(e);
-		}catch (DriverIOException e) {
-			NotificationManager.addError(e.getMessage(), e);
-		} catch (DriverLoadException e) {
-			NotificationManager.addError(e.getMessage(), e);
-		} catch (com.iver.cit.gvsig.fmap.DriverException e) {
+		} //		te.stopEditing(vectLayer, false);
+		catch (ExpansionFileWriteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ValidateRowException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ReadDriverException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//		te.stopEditing(vectLayer, false);
 
 	}
 
@@ -362,7 +361,7 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 			}
 
 			String[] attrNames = sourceRecordset.getFieldNames();
-			int fieldsNumber = sourceRecordset.getFieldCount();
+			int fieldsNumber = targetRecordset.getFieldCount();
 
 			te.startEditing(targetLayer);
 			isEdited = true;
@@ -399,7 +398,7 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 					continue;
 				}
 				IGeometry gvGeom = sourceFeats.getShape(i);
-				gvGeom.reProject(sourceLayer.getProjection().getCT(sourceLayer.getMapContext().getProjection()));
+//				gvGeom.reProject(sourceLayer.getProjection().getCT(sourceLayer.getMapContext().getProjection()));
 
 				Value[] values = new Value[fieldsNumber];
 				for (int j = 0;  j < values.length; j++) {
@@ -416,7 +415,7 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 					case java.sql.Types.CHAR:
 					case java.sql.Types.LONGVARCHAR:
 					case java.sql.Types.VARCHAR:
-						values[tgtIdx] = ValueFactory.createValue((String) srcValue.toString());
+						values[tgtIdx] = ValueFactory.createValue(srcValue.toString());
 						break;
 					case java.sql.Types.TINYINT:
 					case java.sql.Types.SMALLINT:
@@ -433,11 +432,11 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 						}
 						if (srcValue instanceof IntValue){
 							IntValue v = (IntValue) srcValue;
-							values[tgtIdx] = ValueFactory.createValue((Integer) v.intValue());
+							values[tgtIdx] = ValueFactory.createValue(v.intValue());
 						}
 						if (srcValue instanceof DoubleValue){
 							DoubleValue v = (DoubleValue) srcValue;
-							values[tgtIdx] = ValueFactory.createValue((Integer) v.intValue());
+							values[tgtIdx] = ValueFactory.createValue(v.intValue());
 						}
 						if (srcValue instanceof BooleanValue){
 							BooleanValue v = (BooleanValue) srcValue;
@@ -463,11 +462,11 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 						}
 						if (srcValue instanceof IntValue){
 							IntValue v = (IntValue) srcValue;
-							values[tgtIdx] = ValueFactory.createValue((Double) v.doubleValue());
+							values[tgtIdx] = ValueFactory.createValue(v.doubleValue());
 						}
 						if (srcValue instanceof DoubleValue){
 							DoubleValue v = (DoubleValue) srcValue;
-							values[tgtIdx] = ValueFactory.createValue((Double) v.doubleValue());
+							values[tgtIdx] = ValueFactory.createValue(v.doubleValue());
 						}
 						if (srcValue instanceof BooleanValue){
 							BooleanValue v = (BooleanValue) srcValue;
@@ -503,9 +502,6 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 
 			}
 			sourceFeats.stop();
-		} catch (com.hardcode.gdbms.engine.data.driver.DriverException e) {
-			error = true;
-			e.printStackTrace();
 		} catch (Exception e) {
 			error = true;
 			e.printStackTrace();
@@ -561,6 +557,11 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 				matchFileTF.setText(chooser.getSelectedFile().getAbsolutePath());
 			}
 		}
+	}
+
+	public Object getWindowProfile() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
