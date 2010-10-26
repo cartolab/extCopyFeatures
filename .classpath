@@ -8,9 +8,10 @@
 	<classpathentry kind="src" path="/extCAD"/>
 	<classpathentry kind="src" path="/appgvSIG"/>
 	<classpathentry kind="src" path="/libGDBMS"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/libCq CMS for java"/>
 	<classpathentry kind="lib" path="/libFMap/lib/jts-1.9.jar"/>
-	<classpathentry kind="lib" path="/extHondForms/lib/miglayout-3.7.2.jar"/>
-	<classpathentry kind="lib" path="lib/es.udc.cartolab.gvsig.navtable.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/libExceptions"/>
+	<classpathentry kind="lib" path="/extNavTable/lib/miglayout-3.7.3.1.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/extNavTable"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/libProjection"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
