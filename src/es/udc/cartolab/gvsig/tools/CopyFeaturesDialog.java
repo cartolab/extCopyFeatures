@@ -1,5 +1,6 @@
 package es.udc.cartolab.gvsig.tools;
 
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -32,6 +33,7 @@ import com.hardcode.gdbms.engine.values.StringValue;
 import com.hardcode.gdbms.engine.values.Value;
 import com.hardcode.gdbms.engine.values.ValueFactory;
 import com.iver.andami.PluginServices;
+import com.iver.andami.ui.mdiFrame.MDIFrame;
 import com.iver.andami.ui.mdiManager.IWindow;
 import com.iver.andami.ui.mdiManager.WindowInfo;
 import com.iver.cit.gvsig.CADExtension;
@@ -79,16 +81,31 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 
 	private JCheckBox onlySelectedChB = null;
 
-	public WindowInfo getWindowInfo() {
-		if (viewInfo == null) {
-			viewInfo = new WindowInfo(WindowInfo.MODALDIALOG | WindowInfo.RESIZABLE | WindowInfo.PALETTE);
-			viewInfo.setTitle(PluginServices.getText(this, "copyfeatures"));
-			viewInfo.setWidth(300);
-			viewInfo.setHeight(250);
-		}
-		return viewInfo;
-	}
+	 public WindowInfo getWindowInfo() {
+         if (viewInfo == null){
+                 viewInfo = new WindowInfo(WindowInfo.MODALDIALOG | WindowInfo.RESIZABLE);
+                 viewInfo.setTitle(PluginServices.getText(this, "copyfeatures"));
+                 Dimension dim = getPreferredSize();
+                 MDIFrame a = (MDIFrame) PluginServices.getMainFrame();
+                 int maxHeight =  a.getHeight()-175;
+                 int maxWidth =  a.getWidth()-15;
 
+                 int width,heigth = 0;
+                 if (dim.getHeight()> maxHeight){
+                         heigth = maxHeight;
+                 }else{
+                         heigth = new Double(dim.getHeight()).intValue();
+                 }
+                 if (dim.getWidth()> maxWidth){
+                         width = maxWidth;
+                 }else{
+                         width = new Double(dim.getWidth()).intValue();
+                 }
+                 viewInfo.setWidth(width+20);
+                 viewInfo.setHeight(heigth+15);
+         }
+         return viewInfo;
+ }
 	public CopyFeaturesDialog() {
 		super();
 		try {
