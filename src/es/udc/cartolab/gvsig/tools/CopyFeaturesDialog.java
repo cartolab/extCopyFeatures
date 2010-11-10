@@ -441,8 +441,10 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 						if (srcValue instanceof StringValue){
 							String aux = srcValue.toString().replace("\"", "");
 							try {
-								int auxInt = Integer.parseInt(aux);
-								values[tgtIdx] = ValueFactory.createValue(auxInt);
+								// fpuga: Maybe is better don't convert from real numbers, but others time this is a
+								// useful feature
+								int auxInt = (int) Math.round(Double.parseDouble(aux));
+                                                                values[tgtIdx] = ValueFactory.createValue(auxInt);
 							} catch (NumberFormatException e){
 								//TODO
 							}
