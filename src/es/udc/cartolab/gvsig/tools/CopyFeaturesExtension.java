@@ -3,6 +3,7 @@ import javax.swing.JOptionPane;
 
 import com.iver.andami.PluginServices;
 import com.iver.andami.plugins.Extension;
+import com.iver.cit.gvsig.project.documents.view.gui.View;
 
 public class CopyFeaturesExtension extends Extension{
 
@@ -41,7 +42,11 @@ public class CopyFeaturesExtension extends Extension{
 	}
 
 	public boolean isVisible() {
-		return true;
+		if ( PluginServices.getMDIManager().getActiveWindow() instanceof View ) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 }
