@@ -7,6 +7,16 @@ import com.iver.cit.gvsig.project.documents.view.gui.View;
 
 public class CopyFeaturesExtension extends Extension{
 
+	private String defaultPath = null;
+
+	public void setDefaultPath(String defaultPath) {
+		this.defaultPath = defaultPath;
+	}
+
+	public String getDefaultPath() {
+		return defaultPath;
+	}
+
 	public void execute(String actionCommand) {
 
 		CopyFeaturesDialog dialog = new CopyFeaturesDialog();

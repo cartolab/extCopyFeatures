@@ -81,37 +81,36 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 
 	private JCheckBox onlySelectedChB = null;
 
-	 public WindowInfo getWindowInfo() {
-         if (viewInfo == null){
-                 viewInfo = new WindowInfo(WindowInfo.MODALDIALOG | WindowInfo.RESIZABLE);
-                 viewInfo.setTitle(PluginServices.getText(this, "copyfeatures"));
-                 Dimension dim = getPreferredSize();
-                 MDIFrame a = (MDIFrame) PluginServices.getMainFrame();
-                 int maxHeight =  a.getHeight()-175;
-                 int maxWidth =  a.getWidth()-15;
+	public WindowInfo getWindowInfo() {
+		if (viewInfo == null){
+			viewInfo = new WindowInfo(WindowInfo.MODALDIALOG | WindowInfo.RESIZABLE);
+			viewInfo.setTitle(PluginServices.getText(this, "copyfeatures"));
+			Dimension dim = getPreferredSize();
+			MDIFrame a = (MDIFrame) PluginServices.getMainFrame();
+			int maxHeight =  a.getHeight()-175;
+			int maxWidth =  a.getWidth()-15;
 
-                 int width,heigth = 0;
-                 if (dim.getHeight()> maxHeight){
-                         heigth = maxHeight;
-                 }else{
-                         heigth = new Double(dim.getHeight()).intValue();
-                 }
-                 if (dim.getWidth()> maxWidth){
-                         width = maxWidth;
-                 }else{
-                         width = new Double(dim.getWidth()).intValue();
-                 }
-                 viewInfo.setWidth(width+20);
-                 viewInfo.setHeight(heigth+15);
-         }
-         return viewInfo;
- }
+			int width,heigth = 0;
+			if (dim.getHeight()> maxHeight){
+				heigth = maxHeight;
+			}else{
+				heigth = new Double(dim.getHeight()).intValue();
+			}
+			if (dim.getWidth()> maxWidth){
+				width = maxWidth;
+			}else{
+				width = new Double(dim.getWidth()).intValue();
+			}
+			viewInfo.setWidth(width+20);
+			viewInfo.setHeight(heigth+15);
+		}
+		return viewInfo;
+	}
 	public CopyFeaturesDialog() {
 		super();
 		try {
 			initialize();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -377,7 +376,7 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 
 			}
 
-			String[] attrNames = sourceRecordset.getFieldNames();
+			sourceRecordset.getFieldNames();
 			int fieldsNumber = targetRecordset.getFieldCount();
 
 			te.startEditing(targetLayer);
@@ -415,7 +414,7 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 					continue;
 				}
 				IGeometry gvGeom = sourceFeats.getShape(i);
-//				gvGeom.reProject(sourceLayer.getProjection().getCT(sourceLayer.getMapContext().getProjection()));
+				//				gvGeom.reProject(sourceLayer.getProjection().getCT(sourceLayer.getMapContext().getProjection()));
 
 				Value[] values = new Value[fieldsNumber];
 				for (int j = 0;  j < values.length; j++) {
@@ -444,7 +443,7 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 								// fpuga: Maybe is better don't convert from real numbers, but others time this is a
 								// useful feature
 								int auxInt = (int) Math.round(Double.parseDouble(aux));
-                                                                values[tgtIdx] = ValueFactory.createValue(auxInt);
+								values[tgtIdx] = ValueFactory.createValue(auxInt);
 							} catch (NumberFormatException e){
 								//TODO
 							}
@@ -569,12 +568,21 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 
 		if (e.getSource() == matchFileButton){
 
-			JFileChooser chooser = new JFileChooser();
+
+			CopyFeaturesExtension cfe = ((CopyFeaturesExtension) PluginServices.getExtension(CopyFeaturesExtension.class));
+			String defaultPath = cfe.getDefaultPath();
+
+			JFileChooser chooser = new JFileChooser(defaultPath);
 			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
 			int returnVal = chooser.showOpenDialog(this);
 			if(returnVal == JFileChooser.APPROVE_OPTION) {
-				matchFileTF.setText(chooser.getSelectedFile().getAbsolutePath());
+				File selectedFile = chooser.getSelectedFile();
+				matchFileTF.setText(selectedFile.getAbsolutePath());
+				cfe.setDefaultPath(selectedFile.getParent());
+
 			}
+
 		}
 	}
 
