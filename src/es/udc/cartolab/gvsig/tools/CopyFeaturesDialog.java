@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -337,7 +338,9 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 					continue;
 				}
 				IGeometry gvGeom = sourceFeats.getShape(i);
-				//				gvGeom.reProject(sourceLayer.getProjection().getCT(sourceLayer.getMapContext().getProjection()));
+				if (sourceLayer.getProjection() != sourceLayer.getMapContext().getProjection()) {
+					gvGeom.reProject(sourceLayer.getProjection().getCT(sourceLayer.getMapContext().getProjection()));
+				}
 
 				Value[] values = new Value[fieldsNumber];
 				for (int j = 0;  j < values.length; j++) {
@@ -350,6 +353,12 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 					Value srcValue = sourceRecordset.getFieldValue(i, srcIdx);
 					int tgtType = targetRecordset.getFieldType(tgtIdx);
 					values[tgtIdx] = getValue(srcValue, tgtType);
+				}
+
+				HashMap<Integer, Method> calculatedFieldsMap = parser.getCalculatedFieldsMap(targetRecordset);
+				for (int tgtIdx:calculatedFieldsMap.keySet()) {
+					Method method = calculatedFieldsMap.get(Integer.valueOf(tgtIdx));
+					values[tgtIdx] = (Value) method.invoke(null, gvGeom);
 				}
 
 				createFeature(te, targetLayer, gvGeom, values);

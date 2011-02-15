@@ -4,17 +4,19 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.util.HashMap;
 
 import com.hardcode.gdbms.driver.exceptions.ReadDriverException;
 import com.iver.andami.PluginServices;
+import com.iver.cit.gvsig.fmap.core.IGeometry;
 import com.iver.cit.gvsig.fmap.layers.SelectableDataSource;
 
 public class MatchingFileParser {
 
 	private HashMap<String, String> matchFields;
-	private HashMap<String, String> calculatedFields;
+	private HashMap<String, Method> calculatedFields;
 
 	public MatchingFileParser(String filepath) throws ParseException {
 
@@ -24,13 +26,13 @@ public class MatchingFileParser {
 		}
 
 		matchFields = new HashMap<String, String>();
-		calculatedFields = new HashMap<String, String>();
+		calculatedFields = new HashMap<String, Method>();
 
+		int lineNumber = 1;
 
 		try {
 			String line;
 			BufferedReader fileReader = new BufferedReader(new FileReader(file));
-			int lineNumber = 0;
 
 			while ((line = fileReader.readLine())!=null) {
 
@@ -40,19 +42,25 @@ public class MatchingFileParser {
 
 				String tokens[] = line.split("[:=]");
 
-				if (2 != tokens.length) {
+				String k = tokens[0].trim().toUpperCase();
+				String v = tokens[1].trim().toUpperCase();
+
+				if ((2 != tokens.length) || (0 == k.length()) || (0 == v.length())){
 					throw new ParseException("Bad Syntax", lineNumber);
 				}
 
-				String k = tokens[0].trim().toUpperCase();
-				String v = tokens[1].trim().toUpperCase();
-				if ((k.length() > 0) && (v.length() > 0)) {
-					if (line.contains("=")) {
-						matchFields.put(k, v);
-					} else {
-						calculatedFields.put(k,v);
+				if (line.contains("=")) {
+					matchFields.put(k, v);
+				} else {
+					try {
+						Method  method = FieldFillUtilities.class.getDeclaredMethod (v, IGeometry.class);
+						calculatedFields.put(k,method);
+					} catch (Exception e) {
+						e.printStackTrace();
+						throw new ParseException("Bad Syntax", lineNumber);
 					}
 				}
+
 				lineNumber++;
 			}
 
@@ -61,6 +69,21 @@ public class MatchingFileParser {
 		}
 	}
 
+	public HashMap<Integer, Method> getCalculatedFieldsMap(SelectableDataSource targetRecordset)
+	throws ReadDriverException {
+		HashMap<Integer, Method> calculatedFieldsMap = new HashMap<Integer, Method>();
+
+		for (String targetField:calculatedFields.keySet()) {
+			int tgtIdx = targetRecordset.getFieldIndexByName(targetField);
+			if (-1 == tgtIdx) {
+				//TODO Translate!!
+				System.out.println("ERROR -------------> El campo " + targetField + " no existe en la capa destino");
+				continue;
+			}
+			calculatedFieldsMap.put(tgtIdx, calculatedFields.get(targetField));
+		}
+		return calculatedFieldsMap;
+	}
 
 	public  HashMap<Integer, Integer> getMatchingMap(SelectableDataSource sourceRecordset, SelectableDataSource targetRecordset) throws ReadDriverException {
 
