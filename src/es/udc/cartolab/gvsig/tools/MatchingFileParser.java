@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.HashMap;
 
 import com.hardcode.gdbms.driver.exceptions.ReadDriverException;
@@ -13,8 +14,9 @@ import com.iver.cit.gvsig.fmap.layers.SelectableDataSource;
 public class MatchingFileParser {
 
 	private HashMap<String, String> matchFields;
+	private HashMap<String, String> calculatedFields;
 
-	public MatchingFileParser(String filepath) {
+	public MatchingFileParser(String filepath) throws ParseException {
 
 		File file = new File(filepath);
 		if (!file.exists()){
@@ -22,19 +24,38 @@ public class MatchingFileParser {
 		}
 
 		matchFields = new HashMap<String, String>();
+		calculatedFields = new HashMap<String, String>();
+
+
 		try {
 			String line;
 			BufferedReader fileReader = new BufferedReader(new FileReader(file));
+			int lineNumber = 0;
+
 			while ((line = fileReader.readLine())!=null) {
-				String tokens[] = line.split("=");
-				if (tokens.length == 2) {
-					String k = tokens[0].trim().toUpperCase();
-					String v = tokens[1].trim().toUpperCase();
-					if ((k.length() > 0) && (v.length() > 0)) {
+
+				if (0 == line.trim().length()) {
+					continue;
+				}
+
+				String tokens[] = line.split("[:=]");
+
+				if (2 != tokens.length) {
+					throw new ParseException("Bad Syntax", lineNumber);
+				}
+
+				String k = tokens[0].trim().toUpperCase();
+				String v = tokens[1].trim().toUpperCase();
+				if ((k.length() > 0) && (v.length() > 0)) {
+					if (line.contains("=")) {
 						matchFields.put(k, v);
+					} else {
+						calculatedFields.put(k,v);
 					}
 				}
+				lineNumber++;
 			}
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

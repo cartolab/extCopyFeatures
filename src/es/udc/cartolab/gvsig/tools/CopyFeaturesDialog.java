@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -282,6 +283,7 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 
 		ReadableVectorial sourceFeats = null;
 		boolean error = false;
+		String errorMessage = "";
 		boolean isEdited = false;
 
 		int copyCount = 0;
@@ -355,19 +357,22 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 
 			}
 			sourceFeats.stop();
+		} catch (ParseException e) {
+			error = true;
+			errorMessage = String.format(PluginServices.getText(this, "bad_syntax"), e.getErrorOffset());
 		} catch (Exception e) {
 			error = true;
+			errorMessage = PluginServices.getText(this, "ERROR: Se han copiado " +copyCount+ " entidades.");
 			e.printStackTrace();
 		} finally {
 
 			if (isEdited) {
 				te.stopEditing(targetLayer, false);
-				PluginServices.getMDIManager().closeWindow(this);
 			}
 
 			if (error){
 				JOptionPane.showMessageDialog(this,
-						PluginServices.getText(this, "ERROR: Se han copiado " +copyCount+ " entidades."),
+						errorMessage,
 						"Error",
 						JOptionPane.ERROR_MESSAGE);
 			} else {
@@ -376,6 +381,7 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 						"Information",
 						JOptionPane.INFORMATION_MESSAGE);
 			}
+			PluginServices.getMDIManager().closeWindow(this);
 		}
 
 	}
