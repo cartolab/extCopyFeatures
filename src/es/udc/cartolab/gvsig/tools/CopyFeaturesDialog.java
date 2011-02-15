@@ -5,9 +5,7 @@ import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -251,7 +249,7 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 			DefaultFeature df = new DefaultFeature(feature, values, newFID);
 			int index = vea.addRow(df, "_newET", EditionEvent.GRAPHIC);
 			//clearSelection();
-			ArrayList selectedRow = vle.getSelectedRow();
+			ArrayList<DefaultRowEdited> selectedRow = vle.getSelectedRow();
 			ViewPort vp = vle.getLayer().getMapContext().getViewPort();
 			BufferedImage selectionImage = new BufferedImage(vp
 					.getImageWidth(), vp.getImageHeight(),
@@ -266,65 +264,21 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 			vle.drawHandlers(geom.cloneGeometry(), gs, vp);
 			vea.setSelectionImage(selectionImage);
 
-
 			SelectableDataSource recordset = vectLayer.getRecordset();
 			recordset.clearSelection();
 
-		} //		te.stopEditing(vectLayer, false);
-		catch (ExpansionFileWriteException e) {
-			// TODO Auto-generated catch block
+		} catch (ExpansionFileWriteException e) {
 			e.printStackTrace();
 		} catch (ValidateRowException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ReadDriverException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
 	}
 
 
-	/**
-	 *  File must have lines with:
-	 *  			TARGET_FIELDNAME = SOURCE_FIELDNAME
-	 * 
-	 *  It returns a Map<target, source> fields
-	 * 
-	 * @param filepath
-	 * @return
-	 */
-	private HashMap getMatchFieldMap(String filepath){
-
-		File file = new File(filepath);
-		if (!file.exists()){
-			return null;
-		}
-
-		HashMap<String, String> matchFields = new HashMap<String, String>();
-
-		try {
-			String line;
-			BufferedReader fileReader = new BufferedReader(new FileReader(file));
-			while ((line = fileReader.readLine())!=null) {
-				String tokens[] = line.split("=");
-				if (tokens.length == 2) {
-					String k = tokens[0].trim().toUpperCase();
-					String v = tokens[1].trim().toUpperCase();
-					if ((k.length() > 0) && (v.length() > 0)) {
-						matchFields.put(k, v);
-					}
-				}
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return matchFields;
-	}
-
-	public void copyData(String targetLayerName, String sourceLayerName, String match_filepath, boolean onlySelected) {
+	public void copyData(String targetLayerName, String sourceLayerName, boolean onlySelected, String match_filepath) {
 
 		ReadableVectorial sourceFeats = null;
 		boolean error = false;
@@ -338,45 +292,12 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 
 		try {
 
-			// Map that match target index fields with source index fields
-			HashMap<Integer, Integer> tgtSrcIdxMap = new HashMap<Integer, Integer>();
-			HashMap<String, String> matchMap = getMatchFieldMap(match_filepath);
-
-			if (matchMap == null) {
-				error = true;
-				return;
-			}
-
 			SelectableDataSource targetRecordset = targetLayer.getRecordset();
 			SelectableDataSource sourceRecordset = sourceLayer.getRecordset();
 
-			for (int j = 0; j < targetRecordset.getFieldCount(); j++){
-				System.out.println(j + ": " + targetRecordset.getFieldName(j) + "  -> " + targetRecordset.getFieldType(j) );
-			}
+			MatchingFileParser parser = new MatchingFileParser(match_filepath);
+			HashMap<Integer, Integer> tgtSrcIdxMap = parser.getMatchingMap(sourceRecordset, targetRecordset);
 
-
-			for (String tgt_field:matchMap.keySet()) {
-				tgt_field = tgt_field.toUpperCase();
-				String src_field = matchMap.get(tgt_field).toUpperCase();
-				int src_idx = sourceRecordset.getFieldIndexByName(src_field);
-				int tgt_idx = targetRecordset.getFieldIndexByName(tgt_field);
-
-				if (src_idx == -1){
-					//TODO Translate!!
-					System.out.println("ERROR -------------> El campo " + src_field + " no existe en la capa SOURCE ["+ sourceLayerName+"]");
-					continue;
-				}
-
-				if (tgt_idx == -1){
-					//TODO Translate!!
-					System.out.println("ERROR -------------> El campo " + tgt_field + " no existe en la capa TARGET ["+ targetLayerName+"]");
-					continue;
-				}
-				tgtSrcIdxMap.put(tgt_idx, src_idx);
-
-			}
-
-			sourceRecordset.getFieldNames();
 			int fieldsNumber = targetRecordset.getFieldCount();
 
 			te.startEditing(targetLayer);
@@ -426,93 +347,7 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 					int srcIdx = tgtSrcIdxMap.get(tgtIdx);
 					Value srcValue = sourceRecordset.getFieldValue(i, srcIdx);
 					int tgtType = targetRecordset.getFieldType(tgtIdx);
-
-					switch (tgtType) {
-					case java.sql.Types.CHAR:
-					case java.sql.Types.LONGVARCHAR:
-					case java.sql.Types.VARCHAR:
-						values[tgtIdx] = ValueFactory.createValue(srcValue.toString());
-						break;
-					case java.sql.Types.TINYINT:
-					case java.sql.Types.SMALLINT:
-					case java.sql.Types.BIGINT:
-					case java.sql.Types.INTEGER:
-						if (srcValue instanceof StringValue){
-							String aux = srcValue.toString().replace("\"", "");
-							try {
-								// fpuga: Maybe is better don't convert from real numbers, but others time this is a
-								// useful feature
-								int auxInt = (int) Math.round(Double.parseDouble(aux));
-								values[tgtIdx] = ValueFactory.createValue(auxInt);
-							} catch (NumberFormatException e){
-								//TODO
-							}
-						}
-						if (srcValue instanceof IntValue){
-							IntValue v = (IntValue) srcValue;
-							values[tgtIdx] = ValueFactory.createValue(v.intValue());
-						}
-						if (srcValue instanceof DoubleValue){
-							DoubleValue v = (DoubleValue) srcValue;
-							values[tgtIdx] = ValueFactory.createValue(v.intValue());
-						}
-						if (srcValue instanceof BooleanValue){
-							BooleanValue v = (BooleanValue) srcValue;
-							if (v.getValue() == false) {
-								values[tgtIdx] = ValueFactory.createValue(0);
-							} else {
-								values[tgtIdx] = ValueFactory.createValue(1);
-							}
-						}
-						break;
-					case java.sql.Types.DECIMAL:
-					case java.sql.Types.FLOAT:
-					case java.sql.Types.NUMERIC:
-					case java.sql.Types.DOUBLE:
-						if (srcValue instanceof StringValue){
-							String aux = srcValue.toString().replace("\"", "");
-							try {
-								double auxDouble = Double.parseDouble(aux);
-								values[tgtIdx] = ValueFactory.createValue(auxDouble);
-							} catch (NumberFormatException e){
-								//TODO
-							}
-						}
-						if (srcValue instanceof IntValue){
-							IntValue v = (IntValue) srcValue;
-							values[tgtIdx] = ValueFactory.createValue(v.doubleValue());
-						}
-						if (srcValue instanceof DoubleValue){
-							DoubleValue v = (DoubleValue) srcValue;
-							values[tgtIdx] = ValueFactory.createValue(v.doubleValue());
-						}
-						if (srcValue instanceof BooleanValue){
-							BooleanValue v = (BooleanValue) srcValue;
-							if (v.getValue() == false) {
-								values[tgtIdx] = ValueFactory.createValue(0.0);
-							} else {
-								values[tgtIdx] = ValueFactory.createValue(1.0);
-							}
-						}
-						break;
-					case java.sql.Types.BIT:
-					case java.sql.Types.BOOLEAN:
-						String aux = srcValue.toString();
-						if ((aux.toUpperCase() == "FALSE") || (aux == "0") || (aux == "0.0") || (aux.toUpperCase() == "NO")){
-							values[tgtIdx] = ValueFactory.createValue(false);
-						} else {
-							values[tgtIdx] = ValueFactory.createValue(true);
-						}
-						break;
-					default:
-						break;
-					}
-
-				}
-
-				//TODO Delete that FOR
-				for (int j = 0; j < values.length; j++) {
-					System.out.println(j + "-  Type: " + values[j].getSQLType() + "   -> " + values[j].toString());
+					values[tgtIdx] = getValue(srcValue, tgtType);
 				}
 
 				createFeature(te, targetLayer, gvGeom, values);
@@ -544,6 +379,90 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 		}
 
 	}
+	private Value getValue(Value srcValue, int tgtType) {
+		Value value = null;
+		switch (tgtType) {
+		case java.sql.Types.CHAR:
+		case java.sql.Types.LONGVARCHAR:
+		case java.sql.Types.VARCHAR:
+			value = ValueFactory.createValue(srcValue.toString());
+			break;
+		case java.sql.Types.TINYINT:
+		case java.sql.Types.SMALLINT:
+		case java.sql.Types.BIGINT:
+		case java.sql.Types.INTEGER:
+			if (srcValue instanceof StringValue){
+				String aux = srcValue.toString().replace("\"", "");
+				try {
+					// fpuga: Maybe is better don't convert from real numbers, but others time this is a
+					// useful feature
+					int auxInt = (int) Math.round(Double.parseDouble(aux));
+					value = ValueFactory.createValue(auxInt);
+				} catch (NumberFormatException e){
+					//TODO
+				}
+			}
+			if (srcValue instanceof IntValue){
+				IntValue v = (IntValue) srcValue;
+				value = ValueFactory.createValue(v.intValue());
+			}
+			if (srcValue instanceof DoubleValue){
+				DoubleValue v = (DoubleValue) srcValue;
+				value = ValueFactory.createValue(v.intValue());
+			}
+			if (srcValue instanceof BooleanValue){
+				BooleanValue v = (BooleanValue) srcValue;
+				if (v.getValue() == false) {
+					value = ValueFactory.createValue(0);
+				} else {
+					value = ValueFactory.createValue(1);
+				}
+			}
+			break;
+		case java.sql.Types.DECIMAL:
+		case java.sql.Types.FLOAT:
+		case java.sql.Types.NUMERIC:
+		case java.sql.Types.DOUBLE:
+			if (srcValue instanceof StringValue){
+				String aux = srcValue.toString().replace("\"", "");
+				try {
+					double auxDouble = Double.parseDouble(aux);
+					value = ValueFactory.createValue(auxDouble);
+				} catch (NumberFormatException e){
+					//TODO
+				}
+			}
+			if (srcValue instanceof IntValue){
+				IntValue v = (IntValue) srcValue;
+				value = ValueFactory.createValue(v.doubleValue());
+			}
+			if (srcValue instanceof DoubleValue){
+				DoubleValue v = (DoubleValue) srcValue;
+				value = ValueFactory.createValue(v.doubleValue());
+			}
+			if (srcValue instanceof BooleanValue){
+				BooleanValue v = (BooleanValue) srcValue;
+				if (v.getValue() == false) {
+					value = ValueFactory.createValue(0.0);
+				} else {
+					value = ValueFactory.createValue(1.0);
+				}
+			}
+			break;
+		case java.sql.Types.BIT:
+		case java.sql.Types.BOOLEAN:
+			String aux = srcValue.toString();
+			if ((aux.toUpperCase() == "FALSE") || (aux == "0") || (aux == "0.0") || (aux.toUpperCase() == "NO")){
+				value = ValueFactory.createValue(false);
+			} else {
+				value = ValueFactory.createValue(true);
+			}
+			break;
+		default:
+			break;
+		}
+		return value;
+	}
 
 	public void actionPerformed(ActionEvent e) {
 
@@ -558,7 +477,7 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 						"Error",
 						JOptionPane.ERROR_MESSAGE);
 			} else {
-				copyData(targetLayerName, sourceLayerName, matchFileTF.getText(), onlySelectedChB.isSelected());
+				copyData(targetLayerName, sourceLayerName, onlySelectedChB.isSelected(), matchFileTF.getText());
 			}
 		}
 
@@ -587,7 +506,6 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 	}
 
 	public Object getWindowProfile() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
