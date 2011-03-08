@@ -45,18 +45,21 @@ public class CopyFeaturesExtension extends Extension{
 	}
 
 	public void initialize() {
+		PluginServices.getIconTheme().registerDefault("copy-features-icon",
+				this.getClass().getClassLoader().getResource("images/copy.png"));
+
 	}
 
 	public boolean isEnabled() {
-		return true;
-	}
-
-	public boolean isVisible() {
 		if ( PluginServices.getMDIManager().getActiveWindow() instanceof View ) {
 			return true;
 		} else {
 			return false;
 		}
+	}
+
+	public boolean isVisible() {
+		return true;
 	}
 
 }
