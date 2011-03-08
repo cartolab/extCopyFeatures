@@ -84,7 +84,7 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 	public WindowInfo getWindowInfo() {
 		if (viewInfo == null){
 			viewInfo = new WindowInfo(WindowInfo.MODALDIALOG | WindowInfo.RESIZABLE);
-			viewInfo.setTitle(PluginServices.getText(this, "copyfeatures"));
+			viewInfo.setTitle(PluginServices.getText(this, "_copy_features"));
 			Dimension dim = getPreferredSize();
 			MDIFrame a = (MDIFrame) PluginServices.getMainFrame();
 			int maxHeight =  a.getHeight()-175;

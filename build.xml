@@ -1,6 +1,6 @@
 <project name="CartoTools" default="generate-without-source" basedir=".">
     <description>
-    	Honduras
+    	Some tools used in Cartolab for different projects
     </description>
   <!-- set global properties for this build -->
   <property name="src" location="src"/>
@@ -29,15 +29,8 @@
     <!-- Create the distribution directory -->
     <mkdir dir="${dist}"/>
   	<mkdir dir="${dist}/lib"/>
-  	
-  	<copy file="config/about.htm" todir="${dist}" overwrite="yes"/>
   	  	
-    <!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
-	<copy todir="${dist}/lib">
-  	    	<fileset dir="lib" includes="*"/>
-  	</copy>
-
-  	<jar jarfile="${dist}/lib/${plugin}.jar" basedir="${build}" includes="es/udc/cartolab/**"
+    <jar jarfile="${dist}/lib/${plugin}.jar" basedir="${build}" includes="es/udc/cartolab/**"
     />
   	
   	<jar update="true" jarfile="${dist}/lib/${plugin}.jar" basedir="images" includes="*"/>
@@ -90,4 +83,3 @@
 		<delete dir="${build}"/>
 	</target>
 </project>
-
