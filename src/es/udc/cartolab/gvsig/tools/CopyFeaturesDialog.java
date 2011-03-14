@@ -366,7 +366,7 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 					IFeature feature = sourceFeats.getFeature(i);
 					for (int tgtIdx:calculatedFieldsMap.keySet()) {
 						IFieldFillUtils util = calculatedFieldsMap.get(Integer.valueOf(tgtIdx));
-						values[tgtIdx] = util.execute(feature);
+						values[tgtIdx] = util.execute(feature, sourceRecordset);
 					}
 				}
 
