@@ -42,6 +42,7 @@ import com.iver.cit.gvsig.exceptions.validate.ValidateRowException;
 import com.iver.cit.gvsig.fmap.MapControl;
 import com.iver.cit.gvsig.fmap.ViewPort;
 import com.iver.cit.gvsig.fmap.core.DefaultFeature;
+import com.iver.cit.gvsig.fmap.core.IFeature;
 import com.iver.cit.gvsig.fmap.core.IGeometry;
 import com.iver.cit.gvsig.fmap.edition.DefaultRowEdited;
 import com.iver.cit.gvsig.fmap.edition.EditionEvent;
@@ -56,12 +57,13 @@ import com.iver.cit.gvsig.gui.cad.DefaultCADTool;
 import com.iver.cit.gvsig.layers.VectorialLayerEdited;
 import com.iver.cit.gvsig.project.documents.view.gui.View;
 
+import es.udc.cartolab.gvsig.copyfeature.fieldfillutils.IFieldFillUtils;
 import es.udc.cartolab.gvsig.navtable.ToggleEditing;
 
 //TODO Implemente copy DATES
 /**
  * Copy features with attributes between layers. Type conversion is made if possible.
- * 
+ *
  */
 public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListener{
 
@@ -300,6 +302,7 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 
 			MatchingFileParser parser = new MatchingFileParser(match_filepath);
 			HashMap<Integer, Integer> tgtSrcIdxMap = parser.getMatchingMap(sourceRecordset, targetRecordset);
+			HashMap<Integer, IFieldFillUtils> calculatedFieldsMap = parser.getCalculatedFieldsMap(targetRecordset);
 
 			int fieldsNumber = targetRecordset.getFieldCount();
 
@@ -338,10 +341,13 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 					continue;
 				}
 				IGeometry gvGeom = sourceFeats.getShape(i);
+
+				// TODO: pull up the getProjection and comparison to improve performance. A test must be done first
 				if (sourceLayer.getProjection() != sourceLayer.getMapContext().getProjection()) {
 					gvGeom.reProject(sourceLayer.getProjection().getCT(sourceLayer.getMapContext().getProjection()));
 				}
 
+				// TODO: maybe is faster create a nullValues out of the bucle object and clone here
 				Value[] values = new Value[fieldsNumber];
 				for (int j = 0;  j < values.length; j++) {
 					values[j] = ValueFactory.createNullValue();
@@ -355,10 +361,13 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 					values[tgtIdx] = getValue(srcValue, tgtType);
 				}
 
-				HashMap<Integer, Method> calculatedFieldsMap = parser.getCalculatedFieldsMap(targetRecordset);
-				for (int tgtIdx:calculatedFieldsMap.keySet()) {
-					Method method = calculatedFieldsMap.get(Integer.valueOf(tgtIdx));
-					values[tgtIdx] = (Value) method.invoke(null, gvGeom);
+				// getFeature is a slow process, better get it just once, and not do it inside the for
+				if (!calculatedFieldsMap.isEmpty()) {
+					IFeature feature = sourceFeats.getFeature(i);
+					for (int tgtIdx:calculatedFieldsMap.keySet()) {
+						IFieldFillUtils util = calculatedFieldsMap.get(Integer.valueOf(tgtIdx));
+						values[tgtIdx] = util.execute(feature);
+					}
 				}
 
 				createFeature(te, targetLayer, gvGeom, values);

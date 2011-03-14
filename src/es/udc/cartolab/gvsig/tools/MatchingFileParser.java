@@ -10,13 +10,16 @@ import java.util.HashMap;
 
 import com.hardcode.gdbms.driver.exceptions.ReadDriverException;
 import com.iver.andami.PluginServices;
+import com.iver.cit.gvsig.fmap.core.IFeature;
 import com.iver.cit.gvsig.fmap.core.IGeometry;
 import com.iver.cit.gvsig.fmap.layers.SelectableDataSource;
+
+import es.udc.cartolab.gvsig.copyfeature.fieldfillutils.IFieldFillUtils;
 
 public class MatchingFileParser {
 
 	private HashMap<String, String> matchFields;
-	private HashMap<String, Method> calculatedFields;
+	private HashMap<String, IFieldFillUtils> calculatedFields;
 
 	public MatchingFileParser(String filepath) throws ParseException {
 
@@ -26,7 +29,7 @@ public class MatchingFileParser {
 		}
 
 		matchFields = new HashMap<String, String>();
-		calculatedFields = new HashMap<String, Method>();
+		calculatedFields = new HashMap<String, IFieldFillUtils>();
 
 		int lineNumber = 1;
 
@@ -53,8 +56,20 @@ public class MatchingFileParser {
 					matchFields.put(k, v);
 				} else {
 					try {
-						Method  method = FieldFillUtilities.class.getDeclaredMethod (v, IGeometry.class);
-						calculatedFields.put(k,method);
+						String args[] = v.split("[()]");
+						if (args.length > 2) {
+							throw new ParseException("Bad Syntax", lineNumber);
+						}
+
+						String className = "es.udc.cartolab.gvsig.copyfeature.fieldfillutils." + args[0];
+						Class c = Class.forName(className);
+						IFieldFillUtils util = (IFieldFillUtils) c.newInstance();
+						if (args.length == 2) {
+							util.setArguments(args[1]);
+						}
+						calculatedFields.put(k,util);
+
+
 					} catch (Exception e) {
 						e.printStackTrace();
 						throw new ParseException("Bad Syntax", lineNumber);
@@ -69,9 +84,10 @@ public class MatchingFileParser {
 		}
 	}
 
-	public HashMap<Integer, Method> getCalculatedFieldsMap(SelectableDataSource targetRecordset)
+
+	public HashMap<Integer, IFieldFillUtils> getCalculatedFieldsMap(SelectableDataSource targetRecordset)
 	throws ReadDriverException {
-		HashMap<Integer, Method> calculatedFieldsMap = new HashMap<Integer, Method>();
+		HashMap<Integer, IFieldFillUtils> calculatedFieldsMap = new HashMap<Integer, IFieldFillUtils>();
 
 		for (String targetField:calculatedFields.keySet()) {
 			int tgtIdx = targetRecordset.getFieldIndexByName(targetField);
