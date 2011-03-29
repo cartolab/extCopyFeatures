@@ -6,11 +6,11 @@
 	<libraries library-dir="lib"/>
 	<extensions>
 		<extension class-name="es.udc.cartolab.gvsig.tools.CopyFeaturesExtension" description="_copy_features-description" active="true">			
-			<menu text="_copy_features_menu_name/_copy_features"
+			<menu text="_menu_name/_copy_features"
 				action-command="CopyFeatures"
 				icon="images/copy.png" /> 
-			<tool-bar name="_copy_features_tool_bar_name">
-				<action-tool icon="copy-features-icon" tooltip="Copy Features"
+			<tool-bar name="_tool-bar-name"> <!-- "_copy_features_tool_bar_name" -->
+				<action-tool icon="copy-features-icon" tooltip="_copy_features-description"
 					action-command="CopyFeatures" /> 
 			</tool-bar>
 		</extension>		
