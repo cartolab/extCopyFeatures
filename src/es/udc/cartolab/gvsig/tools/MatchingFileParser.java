@@ -4,14 +4,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.util.HashMap;
 
 import com.hardcode.gdbms.driver.exceptions.ReadDriverException;
 import com.iver.andami.PluginServices;
-import com.iver.cit.gvsig.fmap.core.IFeature;
-import com.iver.cit.gvsig.fmap.core.IGeometry;
 import com.iver.cit.gvsig.fmap.layers.SelectableDataSource;
 
 import es.udc.cartolab.gvsig.copyfeature.fieldfillutils.IFieldFillUtils;
@@ -42,6 +39,10 @@ public class MatchingFileParser {
 				if (0 == line.trim().length()) {
 					continue;
 				}
+
+		if (line.startsWith("#")) {
+		    continue;
+		}
 
 				String tokens[] = line.split("[:=]");
 
