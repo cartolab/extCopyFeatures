@@ -352,7 +352,8 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 		    gvGeom.reProject(sourceLayer.getProjection().getCT(sourceLayer.getMapContext().getProjection()));
 		}
 
-		// TODO: maybe is faster create a nullValues out of the bucle object and clone here
+		// TODO: maybe is faster create a nullValues object out of the
+		// loop and clone it here
 		Value[] values = new Value[fieldsNumber];
 		for (int j = 0;  j < values.length; j++) {
 		    values[j] = ValueFactory.createNullValue();
@@ -366,7 +367,8 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 		    values[tgtIdx] = getValue(srcValue, tgtType);
 		}
 
-		// getFeature is a slow process, better get it just once, and not do it inside the for
+		// getFeature is a slow process, better get it just once, and
+		// not do it inside the loop
 		if (!calculatedFieldsMap.isEmpty()) {
 		    IFeature feature = sourceFeats.getFeature(i);
 		    for (int tgtIdx:calculatedFieldsMap.keySet()) {
