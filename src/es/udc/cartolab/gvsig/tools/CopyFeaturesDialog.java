@@ -506,7 +506,9 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 			"Error",
 			JOptionPane.ERROR_MESSAGE);
 	    } else {
+		PluginServices.getMDIManager().setWaitCursor();
 		copyData(targetLayerName, sourceLayerName, onlySelectedChB.isSelected(), matchFileTF.getText());
+		PluginServices.getMDIManager().restoreCursor();
 	    }
 	}
 
