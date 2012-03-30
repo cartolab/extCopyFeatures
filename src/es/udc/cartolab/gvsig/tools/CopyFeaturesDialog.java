@@ -37,6 +37,7 @@ import com.iver.andami.ui.mdiFrame.MDIFrame;
 import com.iver.andami.ui.mdiManager.IWindow;
 import com.iver.andami.ui.mdiManager.WindowInfo;
 import com.iver.cit.gvsig.CADExtension;
+import com.iver.cit.gvsig.ProjectExtension;
 import com.iver.cit.gvsig.exceptions.expansionfile.ExpansionFileWriteException;
 import com.iver.cit.gvsig.exceptions.validate.ValidateRowException;
 import com.iver.cit.gvsig.fmap.MapControl;
@@ -56,6 +57,8 @@ import com.iver.cit.gvsig.fmap.layers.ReadableVectorial;
 import com.iver.cit.gvsig.fmap.layers.SelectableDataSource;
 import com.iver.cit.gvsig.gui.cad.DefaultCADTool;
 import com.iver.cit.gvsig.layers.VectorialLayerEdited;
+import com.iver.cit.gvsig.project.documents.ProjectDocument;
+import com.iver.cit.gvsig.project.documents.table.ProjectTable;
 import com.iver.cit.gvsig.project.documents.view.gui.View;
 
 import es.udc.cartolab.gvsig.copyfeature.fieldfillutils.IFieldFillUtils;
@@ -63,7 +66,11 @@ import es.udc.cartolab.gvsig.navtable.ToggleEditing;
 
 //TODO Implemente copy DATES
 /**
- * Copy features with attributes between layers. Type conversion is made if possible.
+ * Copy features with attributes between layers. Type conversion is made if
+ * possible.
+ *
+ * @author Nacho Varela
+ * @author Francisco Puga <fpuga@cartolab.es> http://conocimientoabierto.es
  *
  */
 public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListener{
@@ -154,6 +161,20 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 	return message;
     }
 
+    private void fillVectorWithTables(Vector<String> layerNames) {
+	// fpuga. Instead of the names we should have a custom model for the
+	// combobox to get directly the SelectableDataSource
+
+	// or at least use getDocumentsOfType and avoid the loop
+	ProjectExtension pe = (ProjectExtension) PluginServices
+		.getExtension(ProjectExtension.class);
+	for (ProjectDocument doc : pe.getProject().getDocuments()) {
+	    if (doc instanceof ProjectTable) {
+		layerNames.add(doc.getName());
+	    }
+	}
+
+    }
 
     private void fillVectorWithVectLayersOfToc(Vector<String> layerNames, FLayers layers) {
 	for (int i=layers.getLayersCount()-1; i >= 0; i--) {
@@ -188,6 +209,7 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 
 		Vector<String> layerNames = new Vector<String>();
 		fillVectorWithVectLayersOfToc(layerNames, layers);
+		// fillVectorWithTables(layerNames);
 
 		JLabel sourceLayerLabel = new JLabel(PluginServices.getText(this, "SourceLayer"));
 		super.add(sourceLayerLabel);
@@ -246,6 +268,7 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 	}
     }
 
+
     public static void createFeature(ToggleEditing te, FLyrVect vectLayer, IGeometry feature, Value[] values) throws IOException {
 
 	VectorialLayerEdited vle = (VectorialLayerEdited) CADExtension.getEditionManager().getActiveLayerEdited();
@@ -297,13 +320,16 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 	int copyCount = 0;
 
 	es.udc.cartolab.gvsig.navtable.ToggleEditing te = new es.udc.cartolab.gvsig.navtable.ToggleEditing();
+
 	FLyrVect sourceLayer = (FLyrVect) layers.getLayer(sourceLayerName);
 	FLyrVect targetLayer = (FLyrVect) layers.getLayer(targetLayerName);
 
 	try {
+	    sourceFeats = sourceLayer.getSource();
+	    sourceFeats.start();
 
 	    SelectableDataSource targetRecordset = targetLayer.getRecordset();
-	    SelectableDataSource sourceRecordset = sourceLayer.getRecordset();
+	    SelectableDataSource sourceRecordset = sourceFeats.getRecordset();
 
 	    MatchingFileParser parser = new MatchingFileParser(match_filepath);
 	    HashMap<Integer, Integer> tgtSrcIdxMap = parser.getMatchingMap(sourceRecordset, targetRecordset);
@@ -314,8 +340,6 @@ public class CopyFeaturesDialog extends JPanel implements IWindow, ActionListene
 	    te.startEditing(targetLayer);
 	    isEdited = true;
 
-	    sourceFeats = sourceLayer.getSource();
-	    sourceFeats.start();
 
 	    FBitSet bitset= sourceRecordset.getSelection();
 
