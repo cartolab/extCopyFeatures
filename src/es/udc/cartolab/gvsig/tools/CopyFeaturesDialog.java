@@ -73,6 +73,7 @@ import es.udc.cartolab.gvsig.navtable.ToggleEditing;
  * @author Francisco Puga <fpuga@cartolab.es> http://conocimientoabierto.es
  * 
  */
+@SuppressWarnings("serial")
 public class CopyFeaturesDialog extends JPanel implements IWindow,
 	ActionListener {
 

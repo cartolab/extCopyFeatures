@@ -11,7 +11,6 @@ import com.iver.cit.gvsig.fmap.layers.SelectableDataSource;
 
 public class REGEXP implements IFieldFillUtils {
 
-    private String field;
     private Pattern pattern;
 
     @Override
@@ -20,7 +19,6 @@ public class REGEXP implements IFieldFillUtils {
 	if (tokens.length != 2) {
 	    throw new ParseException("Bad Syntax", 0);
 	}
-	field = tokens[0];
 	pattern = Pattern.compile(tokens[1]);
     }
 
@@ -28,9 +26,7 @@ public class REGEXP implements IFieldFillUtils {
     public Value execute(IFeature feature, SelectableDataSource sds) {
 	Value value = ValueFactory.createNullValue();
 	try {
-	    int idx = sds.getFieldIndexByName(field);
 	    Matcher m = pattern.matcher("0");
-	    // feature.getAttribute(idx).toString()
 	    value = ValueFactory.createValue(m.group());
 	} catch (Exception e) {
 	    e.printStackTrace();
