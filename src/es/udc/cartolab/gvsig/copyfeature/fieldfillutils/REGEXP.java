@@ -11,30 +11,30 @@ import com.iver.cit.gvsig.fmap.layers.SelectableDataSource;
 
 public class REGEXP implements IFieldFillUtils {
 
-	private String field;
-	private Pattern pattern;
+    private String field;
+    private Pattern pattern;
 
-	public void setArguments(String args) throws ParseException {
-		String tokens[] = args.split(",");
-		if (tokens.length != 2) {
-			throw new ParseException("Bad Syntax", 0);
-		}
-		field = tokens[0];
-		pattern = Pattern.compile(tokens[1]);
+    @Override
+    public void setArguments(String args) throws ParseException {
+	String tokens[] = args.split(",");
+	if (tokens.length != 2) {
+	    throw new ParseException("Bad Syntax", 0);
 	}
+	field = tokens[0];
+	pattern = Pattern.compile(tokens[1]);
+    }
 
-	public Value execute(IFeature feature, SelectableDataSource sds) {
-		Value value = ValueFactory.createNullValue();
-		try {
-			int idx = sds.getFieldIndexByName(field);
-			Matcher m = pattern.matcher("0");
-			// feature.getAttribute(idx).toString()
-			value = ValueFactory.createValue(m.group());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return value;
+    @Override
+    public Value execute(IFeature feature, SelectableDataSource sds) {
+	Value value = ValueFactory.createNullValue();
+	try {
+	    int idx = sds.getFieldIndexByName(field);
+	    Matcher m = pattern.matcher("0");
+	    // feature.getAttribute(idx).toString()
+	    value = ValueFactory.createValue(m.group());
+	} catch (Exception e) {
+	    e.printStackTrace();
 	}
+	return value;
+    }
 }
-
-

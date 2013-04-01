@@ -11,10 +11,12 @@ public class CONSTANT implements IFieldFillUtils {
 
     private Value constantValue;
 
+    @Override
     public void setArguments(String args) throws ParseException {
 	constantValue = ValueFactory.createValue(args);
     }
 
+    @Override
     public Value execute(IFeature feature, SelectableDataSource sds) {
 	return constantValue;
     }

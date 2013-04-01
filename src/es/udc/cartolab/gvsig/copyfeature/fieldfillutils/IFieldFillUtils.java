@@ -7,9 +7,9 @@ import com.iver.cit.gvsig.fmap.core.IFeature;
 import com.iver.cit.gvsig.fmap.layers.SelectableDataSource;
 
 public interface IFieldFillUtils {
-	
-	public void setArguments(String args) throws ParseException;
-	
-	public Value execute(IFeature feature, SelectableDataSource sds);
+
+    public void setArguments(String args) throws ParseException;
+
+    public Value execute(IFeature feature, SelectableDataSource sds);
 
 }

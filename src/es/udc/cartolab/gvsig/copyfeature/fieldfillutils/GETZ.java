@@ -9,11 +9,14 @@ import com.iver.cit.gvsig.fmap.layers.SelectableDataSource;
 
 public class GETZ implements IFieldFillUtils {
 
-	public void setArguments(String args) throws ParseException {
-	}
+    @Override
+    public void setArguments(String args) throws ParseException {
+    }
 
-	public Value execute(IFeature feature, SelectableDataSource sds) {
-		return ValueFactory.createValue(feature.getGeometry().toJTSGeometry().getCoordinate().z);
-	}
+    @Override
+    public Value execute(IFeature feature, SelectableDataSource sds) {
+	return ValueFactory.createValue(feature.getGeometry().toJTSGeometry()
+		.getCoordinate().z);
+    }
 
 }

@@ -17,17 +17,17 @@ import com.iver.cit.gvsig.project.documents.table.ProjectTable;
  * relation with the source from features are being copied. Format:
  * [targetFieldName]:FOREIGNVALUE([tableFieldName,tableNameInTheProject,
  * foreignKeyBetweenSourceAndTable)
- *
+ * 
  * The behavior of this expression can not be warranted if the relation is not
  * 1:1
- *
+ * 
  * tableNameInTheProject can not contain character : or =
- *
+ * 
  * Be aware that this expression is not build with performance in mind, it's
  * extremely slow
- *
+ * 
  * @author Francisco Puga <fpuga@cartolab.es> http://conocimientoabierto.es
- *
+ * 
  */
 public class FOREIGNVALUE implements IFieldFillUtils {
 
@@ -38,7 +38,7 @@ public class FOREIGNVALUE implements IFieldFillUtils {
 
     // private String baseQuery;
 
-
+    @Override
     public void setArguments(String args) throws ParseException {
 	String tokens[] = args.split(",");
 	if (tokens.length != 3) {
@@ -69,15 +69,17 @@ public class FOREIGNVALUE implements IFieldFillUtils {
 		    // baseQuery = "select " + tokens[0] + " from "
 		    // + tableSDS.getName() + "  where " + commonField
 		    // + "='";
+		}
 	    }
-	}
 	}
     }
 
+    @Override
     public Value execute(IFeature feature, SelectableDataSource sds) {
 	Value value = null;
 	try {
-	    int foreignKeySourceFieldIndex = sds.getFieldIndexByName(commonField);
+	    int foreignKeySourceFieldIndex = sds
+		    .getFieldIndexByName(commonField);
 	    String stringSourceValue = feature.getAttribute(
 		    foreignKeySourceFieldIndex).toString();
 	    tableSDS.start();
