@@ -1,14 +1,11 @@
 package es.udc.cartolab.gvsig.tools;
 
 import java.awt.Dimension;
-import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -41,7 +38,6 @@ import com.iver.cit.gvsig.ProjectExtension;
 import com.iver.cit.gvsig.exceptions.expansionfile.ExpansionFileWriteException;
 import com.iver.cit.gvsig.exceptions.validate.ValidateRowException;
 import com.iver.cit.gvsig.fmap.MapControl;
-import com.iver.cit.gvsig.fmap.ViewPort;
 import com.iver.cit.gvsig.fmap.core.DefaultFeature;
 import com.iver.cit.gvsig.fmap.core.IFeature;
 import com.iver.cit.gvsig.fmap.core.IGeometry;
@@ -283,38 +279,14 @@ public class CopyFeaturesDialog extends JPanel implements IWindow,
 	}
     }
 
-    public static void createFeature(ToggleEditing te, FLyrVect vectLayer,
+    public void createFeature(ToggleEditing te, FLyrVect vectLayer,
 	    IGeometry feature, Value[] values) throws IOException {
 
-	VectorialLayerEdited vle = (VectorialLayerEdited) CADExtension
-		.getEditionManager().getActiveLayerEdited();
-	VectorialEditableAdapter vea = vle.getVEA();
-
 	try {
-	    String newFID;
-	    newFID = vea.getNewFID();
-
+	    VectorialEditableAdapter vea = (VectorialEditableAdapter) vectLayer.getSource();
+	    String newFID = vea.getNewFID();
 	    DefaultFeature df = new DefaultFeature(feature, values, newFID);
-	    int index = vea.addRow(df, "_newET", EditionEvent.GRAPHIC);
-	    // clearSelection();
-	    ArrayList<DefaultRowEdited> selectedRow = vle.getSelectedRow();
-	    ViewPort vp = vle.getLayer().getMapContext().getViewPort();
-	    BufferedImage selectionImage = new BufferedImage(
-		    vp.getImageWidth(), vp.getImageHeight(),
-		    BufferedImage.TYPE_INT_ARGB);
-	    Graphics2D gs = selectionImage.createGraphics();
-	    int inversedIndex = vea.getInversedIndex(index);
-	    selectedRow.add(new DefaultRowEdited(df, IRowEdited.STATUS_ADDED,
-		    inversedIndex));
-	    vea.getSelection().set(inversedIndex);
-	    IGeometry geom = df.getGeometry();
-	    geom.cloneGeometry().draw(gs, vp, DefaultCADTool.selectionSymbol);
-	    vle.drawHandlers(geom.cloneGeometry(), gs, vp);
-	    vea.setSelectionImage(selectionImage);
-
-	    SelectableDataSource recordset = vectLayer.getRecordset();
-	    recordset.clearSelection();
-
+	    vea.addRow(df, "_new", EditionEvent.GRAPHIC);
 	} catch (ExpansionFileWriteException e) {
 	    e.printStackTrace();
 	} catch (ValidateRowException e) {
@@ -335,7 +307,7 @@ public class CopyFeaturesDialog extends JPanel implements IWindow,
 
 	int copyCount = 0;
 
-	es.udc.cartolab.gvsig.navtable.ToggleEditing te = new es.udc.cartolab.gvsig.navtable.ToggleEditing();
+	ToggleEditing te = new ToggleEditing();
 
 	FLyrVect sourceLayer = (FLyrVect) layers.getLayer(sourceLayerName);
 	FLyrVect targetLayer = (FLyrVect) layers.getLayer(targetLayerName);
@@ -387,6 +359,9 @@ public class CopyFeaturesDialog extends JPanel implements IWindow,
 		    continue;
 		}
 		IGeometry gvGeom = sourceFeats.getShape(i);
+		if (gvGeom.getGeometryType() != targetLayer.getShapeType()) {
+		    continue;
+		}
 
 		// TODO: pull up the getProjection and comparison to improve
 		// performance. A test must be done first
