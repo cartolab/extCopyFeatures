@@ -2,6 +2,7 @@ package es.udc.cartolab.gvsig.tools;
 
 import javax.swing.JOptionPane;
 
+import com.iver.andami.Launcher;
 import com.iver.andami.PluginServices;
 import com.iver.andami.plugins.Extension;
 import com.iver.cit.gvsig.project.documents.view.gui.View;
@@ -49,6 +50,7 @@ public class CopyFeaturesExtension extends Extension {
 			"copy-features-icon",
 			this.getClass().getClassLoader()
 				.getResource("images/copy.png"));
+	defaultPath = Launcher.getAppHomeDir();
 
     }
 
