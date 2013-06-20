@@ -415,7 +415,7 @@ public class CopyFeaturesDialog extends JPanel implements IWindow,
 	} finally {
 
 	    if (isEdited) {
-		te.stopEditing(targetLayer, false);
+		te.stopEditing(targetLayer, error);
 	    }
 
 	    if (error) {
