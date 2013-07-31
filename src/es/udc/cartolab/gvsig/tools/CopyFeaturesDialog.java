@@ -33,17 +33,15 @@ import com.iver.andami.PluginServices;
 import com.iver.andami.ui.mdiFrame.MDIFrame;
 import com.iver.andami.ui.mdiManager.IWindow;
 import com.iver.andami.ui.mdiManager.WindowInfo;
-import com.iver.cit.gvsig.CADExtension;
 import com.iver.cit.gvsig.ProjectExtension;
 import com.iver.cit.gvsig.exceptions.expansionfile.ExpansionFileWriteException;
 import com.iver.cit.gvsig.exceptions.validate.ValidateRowException;
+import com.iver.cit.gvsig.exceptions.visitors.StopWriterVisitorException;
 import com.iver.cit.gvsig.fmap.MapControl;
 import com.iver.cit.gvsig.fmap.core.DefaultFeature;
 import com.iver.cit.gvsig.fmap.core.IFeature;
 import com.iver.cit.gvsig.fmap.core.IGeometry;
-import com.iver.cit.gvsig.fmap.edition.DefaultRowEdited;
 import com.iver.cit.gvsig.fmap.edition.EditionEvent;
-import com.iver.cit.gvsig.fmap.edition.IRowEdited;
 import com.iver.cit.gvsig.fmap.edition.VectorialEditableAdapter;
 import com.iver.cit.gvsig.fmap.layers.FBitSet;
 import com.iver.cit.gvsig.fmap.layers.FLayer;
@@ -51,8 +49,6 @@ import com.iver.cit.gvsig.fmap.layers.FLayers;
 import com.iver.cit.gvsig.fmap.layers.FLyrVect;
 import com.iver.cit.gvsig.fmap.layers.ReadableVectorial;
 import com.iver.cit.gvsig.fmap.layers.SelectableDataSource;
-import com.iver.cit.gvsig.gui.cad.DefaultCADTool;
-import com.iver.cit.gvsig.layers.VectorialLayerEdited;
 import com.iver.cit.gvsig.project.documents.ProjectDocument;
 import com.iver.cit.gvsig.project.documents.table.ProjectTable;
 import com.iver.cit.gvsig.project.documents.view.gui.View;
@@ -283,7 +279,8 @@ public class CopyFeaturesDialog extends JPanel implements IWindow,
 	    IGeometry feature, Value[] values) throws IOException {
 
 	try {
-	    VectorialEditableAdapter vea = (VectorialEditableAdapter) vectLayer.getSource();
+	    VectorialEditableAdapter vea = (VectorialEditableAdapter) vectLayer
+		    .getSource();
 	    String newFID = vea.getNewFID();
 	    DefaultFeature df = new DefaultFeature(feature, values, newFID);
 	    vea.addRow(df, "_new", EditionEvent.GRAPHIC);
@@ -415,7 +412,12 @@ public class CopyFeaturesDialog extends JPanel implements IWindow,
 	} finally {
 
 	    if (isEdited) {
-		te.stopEditing(targetLayer, error);
+		try {
+		    te.stopEditing(targetLayer, error);
+		} catch (StopWriterVisitorException e) {
+
+		    e.printStackTrace();
+		}
 	    }
 
 	    if (error) {
