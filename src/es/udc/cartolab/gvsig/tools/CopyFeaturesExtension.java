@@ -9,6 +9,8 @@ import com.iver.cit.gvsig.project.documents.view.gui.View;
 
 public class CopyFeaturesExtension extends Extension {
 
+    public static final String COPY_FEATURES_ICON = "copy-features-icon";
+    public static final String COPY_FEATURES_MENU = "_copy_features_menu";
     private String defaultPath = null;
 
     public void setDefaultPath(String defaultPath) {
@@ -47,7 +49,7 @@ public class CopyFeaturesExtension extends Extension {
     public void initialize() {
 	PluginServices.getIconTheme()
 		.registerDefault(
-			"copy-features-icon",
+			COPY_FEATURES_ICON,
 			this.getClass().getClassLoader()
 				.getResource("images/copy.png"));
 	defaultPath = Launcher.getAppHomeDir();
