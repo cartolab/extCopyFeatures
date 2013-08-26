@@ -11,13 +11,13 @@ public class CopyFeaturesExtension extends Extension {
 
     public static final String COPY_FEATURES_ICON = "copy-features-icon";
     public static final String COPY_FEATURES_MENU = "_copy_features_menu";
-    private String defaultPath = null;
+    private static String defaultPath = null;
 
-    public void setDefaultPath(String defaultPath) {
-	this.defaultPath = defaultPath;
+    public static void setDefaultPath(String defPath) {
+	defaultPath = defPath;
     }
 
-    public String getDefaultPath() {
+    public static String getDefaultPath() {
 	return defaultPath;
     }
 
