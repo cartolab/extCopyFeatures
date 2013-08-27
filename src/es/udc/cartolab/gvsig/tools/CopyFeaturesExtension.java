@@ -47,11 +47,10 @@ public class CopyFeaturesExtension extends Extension {
 
     @Override
     public void initialize() {
-	PluginServices.getIconTheme()
-		.registerDefault(
-			COPY_FEATURES_ICON,
-			this.getClass().getClassLoader()
-				.getResource("images/copy.png"));
+	PluginServices.getIconTheme().registerDefault(
+		COPY_FEATURES_ICON,
+		this.getClass().getClassLoader()
+			.getResource("images/copy_features.png"));
 	defaultPath = Launcher.getAppHomeDir();
 
     }
