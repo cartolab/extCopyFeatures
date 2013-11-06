@@ -7,6 +7,11 @@ import com.hardcode.gdbms.engine.values.ValueFactory;
 import com.iver.cit.gvsig.fmap.core.IFeature;
 import com.iver.cit.gvsig.fmap.layers.SelectableDataSource;
 
+/**
+ * Example: type:constant(mytype) will fill the field type with the string
+ * mytype. type:cosntant( ) will fill the field with an space character.
+ * 
+ */
 public class CONSTANT implements IFieldFillUtils {
 
     private Value constantValue;
