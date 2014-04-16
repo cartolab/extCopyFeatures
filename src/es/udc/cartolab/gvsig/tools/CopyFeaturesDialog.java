@@ -517,7 +517,7 @@ public class CopyFeaturesDialog extends JPanel implements IWindow,
 	    }
 	    break;
 	default:
-	    break;
+	    return srcValue;
 	}
 	return value;
     }
