@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="/extNavTable/lib/miglayout-3.7.3.1.jar"/>
 	<classpathentry kind="src" path="/libGDBMS"/>
 	<classpathentry kind="src" path="/_fwAndami"/>
 	<classpathentry kind="src" path="/extCAD"/>
@@ -13,5 +12,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/libDriverManager"/>
 	<classpathentry kind="lib" path="/libFMap/lib/jts-1.12.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/es.icarto.gvsig.commons/lib/miglayout-3.7.3.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
