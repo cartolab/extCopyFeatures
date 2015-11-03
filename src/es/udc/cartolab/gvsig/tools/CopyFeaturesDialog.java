@@ -20,6 +20,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
 
+import org.apache.log4j.Logger;
+
 import net.miginfocom.swing.MigLayout;
 
 import com.hardcode.gdbms.driver.exceptions.ReadDriverException;
@@ -68,6 +70,10 @@ import es.udc.cartolab.gvsig.navtable.ToggleEditing;
 @SuppressWarnings("serial")
 public class CopyFeaturesDialog extends JPanel implements IWindow,
 	ActionListener {
+    
+    
+    private static final Logger logger = Logger
+	    .getLogger(CopyFeaturesDialog.class);
 
     private View view = null;
     FLayers layers = null;
@@ -415,8 +421,18 @@ public class CopyFeaturesDialog extends JPanel implements IWindow,
 		try {
 		    te.stopEditing(targetLayer, error);
 		} catch (StopWriterVisitorException e) {
-
-		    e.printStackTrace();
+		    logger.error(e.getStackTrace(), e);
+		    error = true;
+		    if (e.getCause() != null) {
+			errorMessage = "ERROR: No se ha copiado ninguna entidad.\n\nMotivo del error:\n\n" + e.getCause().getMessage();
+		    }
+		    if (targetLayer.isEditing()) {
+			try {
+			    te.stopEditing(targetLayer, true);
+			} catch (StopWriterVisitorException e1) {
+			    logger.error(e1.getStackTrace(), e1);
+			}
+		    }
 		}
 	    }
 
