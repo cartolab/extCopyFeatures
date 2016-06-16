@@ -83,7 +83,7 @@ public class FOREIGNVALUE implements IFieldFillUtils {
 	    String stringSourceValue = feature.getAttribute(
 		    foreignKeySourceFieldIndex).toString();
 	    tableSDS.start();
-	    for (int i = 0; i < tableSDS.getRowCount(); i++) {
+	    for (long i = 0, lasti = tableSDS.getRowCount(); i < lasti; i++) {
 		Value[] tableRow = tableSDS.getRow(i);
 		// Value foreignKeyTableValue = tableSDS.getFieldValue(i,
 		// foreignKeyTableFieldIndex);

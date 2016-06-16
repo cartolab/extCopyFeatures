@@ -2,7 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="/libGDBMS"/>
-	<classpathentry kind="src" path="/_fwAndami"/>
 	<classpathentry kind="src" path="/extCAD"/>
 	<classpathentry kind="src" path="/libFMap"/>
 	<classpathentry kind="src" path="/appgvSIG"/>
@@ -14,5 +13,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="/es.icarto.gvsig.commons/lib/miglayout-swing-5.1-20150404.220019-96.jar"/>
 	<classpathentry kind="lib" path="/_fwAndami/lib/log4j-1.2.14.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/_fwAndami"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
