@@ -2,14 +2,13 @@ package es.udc.cartolab.gvsig.copyfeature.fieldfillutils;
 
 import java.text.ParseException;
 
-import com.hardcode.gdbms.engine.values.Value;
-import com.iver.cit.gvsig.fmap.core.IFeature;
-import com.iver.cit.gvsig.fmap.layers.SelectableDataSource;
+import org.gvsig.fmap.dal.exception.DataException;
+import org.gvsig.fmap.dal.feature.Feature;
 
 public interface IFieldFillUtils {
 
-    public void setArguments(String args) throws ParseException;
+	public void setArguments(String args) throws ParseException;
 
-    public Value execute(IFeature feature, SelectableDataSource sds);
+	public Object execute(Feature feature) throws DataException;
 
 }
