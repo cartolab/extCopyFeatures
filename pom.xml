@@ -15,97 +15,6 @@
 		<version>2.0.100</version>
 	</parent>
 
-		<dependencies>
-
-
-
-
-			<dependency>
-				<groupId>org.gvsig</groupId>
-				<artifactId>org.gvsig.andami</artifactId>
-				<scope>compile</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.gvsig</groupId>
-				<artifactId>org.gvsig.app.document.table.app.mainplugin</artifactId>
-				<scope>compile</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.gvsig</groupId>
-				<artifactId>org.gvsig.app.mainplugin</artifactId>
-				<scope>compile</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.gvsig</groupId>
-				<artifactId>org.gvsig.fmap.control</artifactId>
-				<scope>compile</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.gvsig</groupId>
-				<artifactId>org.gvsig.fmap.dal.api</artifactId>
-				<scope>compile</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.gvsig</groupId>
-				<artifactId>org.gvsig.fmap.dal.impl</artifactId>
-				<scope>compile</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.gvsig</groupId>
-				<artifactId>org.gvsig.fmap.geometry.api</artifactId>
-				<scope>compile</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.gvsig</groupId>
-				<artifactId>org.gvsig.fmap.mapcontext.api</artifactId>
-				<scope>compile</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.gvsig</groupId>
-				<artifactId>org.gvsig.i18n</artifactId>
-				<scope>compile</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.gvsig</groupId>
-				<artifactId>org.gvsig.metadata.lib.basic.api</artifactId>
-				<scope>compile</scope>
-			</dependency>
-
-
-			<dependency>
-				<groupId>org.gvsig</groupId>
-				<artifactId>org.gvsig.metadata.lib.basic.impl</artifactId>
-				<scope>runtime</scope>
-			</dependency>
-
-
-			<dependency>
-				<groupId>org.gvsig</groupId>
-				<artifactId>org.gvsig.tools.swing.api</artifactId>
-				<scope>compile</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.gvsig</groupId>
-				<artifactId>org.gvsig.ui</artifactId>
-				<scope>compile</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.gvsig</groupId>
-				<artifactId>org.gvsig.utils</artifactId>
-				<scope>compile</scope>
-			</dependency>
-
-		</dependencies>
 
 
 
@@ -119,4 +28,33 @@
 		<gvsig.package.info.state>devel</gvsig.package.info.state>
 	</properties>
 
+	<dependencies>
+		<dependency>
+			<groupId>es.icarto</groupId>
+			<artifactId>es.icarto.gvsig.commons</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.gvsig</groupId>
+			<artifactId>org.gvsig.andami</artifactId>
+		</dependency>
+		<dependency>
+				<groupId>com.miglayout</groupId>
+				<artifactId>miglayout-swing</artifactId>
+				<version>5.0</version>
+			</dependency>
+		<dependency>
+			<groupId>es.icarto</groupId>
+			<artifactId>es.icarto.gvsig.navtable</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.gvsig</groupId>
+			<artifactId>org.gvsig.fmap.geometry.api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.gvsig</groupId>
+			<artifactId>org.gvsig.editing.app.mainplugin</artifactId>
+		</dependency>
+	</dependencies>
 </project>
