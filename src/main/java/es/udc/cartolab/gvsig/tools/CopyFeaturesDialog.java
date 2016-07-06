@@ -35,7 +35,7 @@ import es.udc.cartolab.gvsig.tools.exceptions.ParseException;
 
 @SuppressWarnings("serial")
 public class CopyFeaturesDialog extends AbstractIWindow implements IWindow,
-ActionListener {
+		ActionListener {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(CopyFeaturesDialog.class);
@@ -78,7 +78,6 @@ ActionListener {
 				Orientation.HORIZONTAL, FLyrVect.class);
 		sourceChooser.populateFrom(view, null);
 		sourceChooser.preselectFirstActive();
-		super.add(sourceChooser, "span 2, growx, wrap");
 	}
 
 	private void initTargetCombo(IView view) {
@@ -86,13 +85,14 @@ ActionListener {
 				Orientation.HORIZONTAL, FLyrVect.class);
 		targetChooser.populateFrom(view, null);
 		targetChooser.addEmptyFirst(true);
-		super.add(targetChooser, "span 2, growx, wrap");
 	}
 
 	private void initSelectMatchingFile() {
-		fileChooser = new FileChooser(this, "MatchFile", defaultPath);
+		JPanel wrapPanel = new JPanel();
+		fileChooser = new FileChooser(wrapPanel, "MatchFile", defaultPath);
 		Border border = WidgetFactory.borderTitled("Matching");
-		fileChooser.setBorder(border);
+		wrapPanel.setBorder(border);
+		this.add(wrapPanel, "span 3, grow, wrap");
 	}
 
 	private void initOptionPanel() {
