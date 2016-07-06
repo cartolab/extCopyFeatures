@@ -1,12 +1,16 @@
 package es.udc.cartolab.gvsig.tools.exceptions;
 
-import org.gvsig.tools.exception.BaseException;
-
 @SuppressWarnings("serial")
-public class ParseException extends BaseException {
+public class ParseException extends Exception {
 
-	public ParseException(String message, String key, long code) {
-		super(message, key, code);
+	public final Object[] args;
+
+	public ParseException(String message, Object... args) {
+		super(message);
+		this.args = args;
 	}
 
+	public Object[] getArgs() {
+		return args;
+	}
 }

@@ -1,18 +1,16 @@
 package es.udc.cartolab.gvsig.tools;
 
+import static es.icarto.gvsig.commons.i18n.I18n._;
+
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.border.Border;
 
 import net.miginfocom.swing.MigLayout;
@@ -24,39 +22,38 @@ import org.gvsig.fmap.dal.exception.DataException;
 import org.gvsig.fmap.mapcontext.layers.FLayers;
 import org.gvsig.fmap.mapcontext.layers.vectorial.FLyrVect;
 import org.gvsig.fmap.mapcontrol.MapControl;
-import org.gvsig.i18n.Messages;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import es.icarto.gvsig.commons.gui.AbstractIWindow;
 import es.icarto.gvsig.commons.gui.ChooseLayerPanel;
 import es.icarto.gvsig.commons.gui.ChooseLayerPanel.Orientation;
+import es.icarto.gvsig.commons.gui.FileChooser;
 import es.icarto.gvsig.commons.gui.OkCancelPanel;
 import es.icarto.gvsig.commons.gui.WidgetFactory;
 import es.udc.cartolab.gvsig.tools.exceptions.ParseException;
 
 @SuppressWarnings("serial")
 public class CopyFeaturesDialog extends AbstractIWindow implements IWindow,
-		ActionListener {
+ActionListener {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(CopyFeaturesDialog.class);
 	FLayers layers = null;
-	private JButton matchFileButton = null;
 
 	ChooseLayerPanel<FLyrVect> sourceChooser;
 	ChooseLayerPanel<FLyrVect> targetChooser;
-	private JTextField matchFileTF = null;
 
 	private JCheckBox onlySelectedChB = null;
 
 	private final OkCancelPanel okPanel;
 	private final String defaultPath;
+	private FileChooser fileChooser;
 
 	public CopyFeaturesDialog(IView view, String defaultPath) {
 		super();
 		this.defaultPath = defaultPath;
-		setWindowTitle(PluginServices.getText(this, "_copy_features"));
+		setWindowTitle("copy_features");
 		okPanel = WidgetFactory.okCancelPanel(this, this, this);
 
 		try {
@@ -85,7 +82,7 @@ public class CopyFeaturesDialog extends AbstractIWindow implements IWindow,
 	}
 
 	private void initTargetCombo(IView view) {
-		targetChooser = new ChooseLayerPanel<FLyrVect>(this, "TargerLayer",
+		targetChooser = new ChooseLayerPanel<FLyrVect>(this, "TargetLayer",
 				Orientation.HORIZONTAL, FLyrVect.class);
 		targetChooser.populateFrom(view, null);
 		targetChooser.addEmptyFirst(true);
@@ -93,42 +90,28 @@ public class CopyFeaturesDialog extends AbstractIWindow implements IWindow,
 	}
 
 	private void initSelectMatchingFile() {
-		JPanel matchPanel = new JPanel(new MigLayout("center", "[][70%][]", ""));
-		Border border = BorderFactory.createTitledBorder(PluginServices
-				.getText(this, "Matching"));
-		matchPanel.setBorder(border);
-
-		JLabel matchFileLabel = new JLabel(PluginServices.getText(this,
-				"MatchFile"));
-		matchPanel.add(matchFileLabel);
-
-		matchFileTF = new JTextField();
-		matchFileTF.setText("");
-
-		matchPanel.add(matchFileTF, "growx");
-
-		matchFileButton = new JButton("...");
-		matchFileButton.addActionListener(this);
-		matchPanel.add(matchFileButton, "wrap");
-
-		super.add(matchPanel, "span 3, grow, wrap");
+		fileChooser = new FileChooser(this, "MatchFile", defaultPath);
+		Border border = WidgetFactory.borderTitled("Matching");
+		fileChooser.setBorder(border);
 	}
 
 	private void initOptionPanel() {
 		JPanel featPanel = new JPanel(new MigLayout("left"));
-		Border border = BorderFactory.createTitledBorder(PluginServices
-				.getText(this, "Features"));
+		Border border = WidgetFactory.borderTitled("Features");
 		featPanel.setBorder(border);
 
-		onlySelectedChB = new JCheckBox(PluginServices.getText(this,
-				"OnlySelected"));
+		onlySelectedChB = new JCheckBox(_("OnlySelected"));
 		featPanel.add(onlySelectedChB);
 
 		super.add(featPanel, "span 3, grow, wrap");
 	}
 
 	private void showErrorMsg(String msg) {
-		Object translateMsg = Messages.getText(msg);
+		showErrorMsg(msg, (Object[]) null);
+	}
+
+	private void showErrorMsg(String msg, Object... args) {
+		Object translateMsg = _(msg, args);
 		JOptionPane.showMessageDialog(this, translateMsg, "",
 				JOptionPane.ERROR_MESSAGE);
 	}
@@ -137,9 +120,10 @@ public class CopyFeaturesDialog extends AbstractIWindow implements IWindow,
 	public void actionPerformed(ActionEvent e) {
 		if (e.getActionCommand().equals(OkCancelPanel.OK_ACTION_COMMAND)) {
 			if (sameLayer()) {
-				showErrorMsg("sameLayerError");
+				showErrorMsg("same_layer_error");
 				return;
 			}
+
 			MatchingFileParser parser = validMatchingFile();
 			if (parser == null) {
 				return;
@@ -147,7 +131,7 @@ public class CopyFeaturesDialog extends AbstractIWindow implements IWindow,
 
 			long featuresToCopy = getNumberOfFeaturesToCopy();
 			if (featuresToCopy < 1) {
-				showErrorMsg("No hay entidades para copiar en la capa origen");
+				showErrorMsg("no_entities_to_copy");
 				return;
 			}
 			if (!userConfirmation(sourceChooser.getSelected().getName(),
@@ -159,20 +143,6 @@ public class CopyFeaturesDialog extends AbstractIWindow implements IWindow,
 
 		if (e.getActionCommand().equals(OkCancelPanel.CANCEL_ACTION_COMMAND)) {
 			PluginServices.getMDIManager().closeWindow(this);
-		}
-
-		if (e.getSource() == matchFileButton) {
-			JFileChooser chooser = new JFileChooser(defaultPath);
-			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-
-			int returnVal = chooser.showOpenDialog(this);
-			if (returnVal == JFileChooser.APPROVE_OPTION) {
-				File selectedFile = chooser.getSelectedFile();
-				matchFileTF.setText(selectedFile.getAbsolutePath());
-				CopyFeaturesExtension.setDefaultPath(selectedFile.getParent());
-
-			}
-
 		}
 	}
 
@@ -202,17 +172,17 @@ public class CopyFeaturesDialog extends AbstractIWindow implements IWindow,
 	}
 
 	private MatchingFileParser validMatchingFile() {
-		String filePath = matchFileTF.getText();
-		File file = new File(filePath);
-		if (!file.exists()) {
+		if (!fileChooser.isValidAndExist()) {
 			showErrorMsg("matching_file_not_exists");
 			return null;
 		}
+		File file = fileChooser.getFile();
+		CopyFeaturesExtension.setDefaultPath(file.getParent());
 		MatchingFileParser parser = null;
 		try {
 			parser = new MatchingFileParser(file);
 		} catch (ParseException e) {
-			showErrorMsg(e.getMessage());
+			showErrorMsg(e.getMessage(), e.getArgs());
 			logger.error(e.getMessage(), e);
 		}
 
@@ -222,12 +192,11 @@ public class CopyFeaturesDialog extends AbstractIWindow implements IWindow,
 	private boolean userConfirmation(String source, String target,
 			long numberOfEntitiesToBeCopied) {
 
-		int val = JOptionPane.showOptionDialog(this, "Se van a copiar "
-				+ numberOfEntitiesToBeCopied + " entidades de la capa \""
-				+ source + "\"\n a la capa \"" + target
-				+ "\".\n¿Desea continuar?", "", JOptionPane.OK_CANCEL_OPTION,
-				JOptionPane.QUESTION_MESSAGE, null, new String[] { "Ok",
-						"Cancelar" }, "Ok");
+		String msg = _("confirmation_message", new Object[] {
+				numberOfEntitiesToBeCopied, source, target });
+		int val = JOptionPane.showOptionDialog(this, msg, "",
+				JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
+				null, new String[] { "Ok", "Cancelar" }, "Ok");
 
 		return val == 0;
 	}
@@ -244,7 +213,9 @@ public class CopyFeaturesDialog extends AbstractIWindow implements IWindow,
 			Logic logic = new Logic(parser);
 			msg = logic.copyData(sourceLayer, targetLayer,
 					onlySelectedChB.isSelected());
-
+		} catch (ParseException e) {
+			msg = _(e.getMessage(), e.getArgs());
+			messageType = JOptionPane.ERROR_MESSAGE;
 		} catch (Exception ex) {
 			logger.error(ex.getMessage(), ex);
 			msg = ex.getMessage();

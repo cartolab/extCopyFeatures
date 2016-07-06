@@ -1,5 +1,7 @@
 package es.udc.cartolab.gvsig.tools;
 
+import static es.icarto.gvsig.commons.i18n.I18n._;
+
 import java.util.Map;
 
 import org.gvsig.fmap.dal.feature.EditableFeature;
@@ -92,7 +94,7 @@ public class Logic {
 			DisposeUtils.dispose(sourceSelection);
 			DisposeUtils.dispose(sourceSet);
 		}
-		return "Se han copiado " + copyCount + " entidades.";
+		return _("n_features_copied");
 
 	}
 }

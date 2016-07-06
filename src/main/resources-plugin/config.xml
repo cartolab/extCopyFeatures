@@ -8,12 +8,12 @@
 	<libraries library-dir="lib"/>
 	<extensions>
 		<extension class-name="es.udc.cartolab.gvsig.tools.CopyFeaturesExtension" active="true">			
-			<menu text="_menu_name/_copy_features"
+			<menu text="copy_features.menu/copy_features"
 				name="_copy_features_menu"
 				action-command=""
 				icon="es.udc.cartolab.gvsig.tools.CopyFeaturesExtension" /> 
-			<tool-bar name="_tool-bar-name"> <!-- "_copy_features_tool_bar_name" -->
-				<action-tool icon="es.udc.cartolab.gvsig.tools.CopyFeaturesExtension" tooltip="es.udc.cartolab.gvsig.tools.CopyFeaturesExtension.tooltip"
+			<tool-bar name="copy_features.menu">
+				<action-tool icon="es.udc.cartolab.gvsig.tools.CopyFeaturesExtension" tooltip="copy_features"
 					action-command="" /> 
 			</tool-bar>
 		</extension>		

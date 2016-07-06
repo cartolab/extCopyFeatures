@@ -9,8 +9,6 @@ import org.gvsig.app.project.documents.view.gui.IView;
 
 public class CopyFeaturesExtension extends Extension {
 
-	public static final String COPY_FEATURES_ICON = "copy-features-icon";
-	public static final String COPY_FEATURES_MENU = "_copy_features_menu";
 	private static String defaultPath = null;
 
 	public static void setDefaultPath(String defPath) {

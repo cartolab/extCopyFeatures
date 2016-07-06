@@ -51,9 +51,7 @@ public class MatchingFileParser {
 
 				if ((2 != tokens.length) || (0 == k.length())
 						|| (0 == v.length())) {
-					throw new ParseException(String.format(
-							"Error en la línea %d del fichero de entrada",
-							lineNumber), "", -1);
+					throw new ParseException("error_in_line", lineNumber);
 				}
 
 				if (line.contains("=")) {
@@ -62,10 +60,8 @@ public class MatchingFileParser {
 					try {
 						String args[] = v.split("[()]");
 						if (args.length > 2) {
-							throw new ParseException(
-									String.format(
-											"Error en la línea %d del fichero de entrada",
-											lineNumber), "", -1);
+							throw new ParseException("error_in_line",
+									lineNumber);
 						}
 
 						String className = "es.udc.cartolab.gvsig.copyfeature.fieldfillutils."
@@ -79,9 +75,7 @@ public class MatchingFileParser {
 						calculatedFields.put(k, util);
 
 					} catch (Exception e) {
-						throw new ParseException(String.format(
-								"Error en la línea %d del fichero de entrada",
-								lineNumber), "", -1);
+						throw new ParseException("error_in_line", lineNumber);
 					}
 				}
 
@@ -108,8 +102,8 @@ public class MatchingFileParser {
 		for (String targetField : calculatedFields.keySet()) {
 			int tgtIdx = target.getIndex(targetField);
 			if (-1 == tgtIdx) {
-				throw new ParseException("El campo " + targetField
-						+ " no existe en la capa destino", "", -1);
+				throw new ParseException("field_not_exists_in_target",
+						targetField);
 			}
 			calculatedFieldsMap.put(tgtIdx, calculatedFields.get(targetField));
 		}
@@ -131,13 +125,13 @@ public class MatchingFileParser {
 			int tgt_idx = target.getIndex(tgt_field);
 
 			if (src_idx == -1) {
-				throw new ParseException("El campo " + src_field
-						+ " no existe en la capa SOURCE", "", -1);
+				throw new ParseException("field_not_exists_in_source",
+						src_field);
 			}
 
 			if (tgt_idx == -1) {
-				throw new ParseException("El campo " + tgt_field
-						+ " no existe en la capa TARGET", "", -1);
+				throw new ParseException("field_not_exists_in_target",
+						tgt_field);
 			}
 			tgtSrcIdxMap.put(tgt_idx, src_idx);
 
