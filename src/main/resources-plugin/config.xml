@@ -7,8 +7,10 @@
 	<resourceBundle name="text"/>
 	<libraries library-dir="lib"/>
 	<extensions>
-		<extension class-name="es.udc.cartolab.gvsig.tools.CopyFeaturesExtension" active="true">			
-			<menu text="copy_features.menu/copy_features"
+		<extension class-name="es.udc.cartolab.gvsig.tools.CopyFeaturesExtension" active="true">
+		
+			<menu text="View" is_separator="true"/>			
+			<menu text="View/copy_features"
 				name="_copy_features_menu"
 				action-command=""
 				icon="es.udc.cartolab.gvsig.tools.CopyFeaturesExtension" /> 
