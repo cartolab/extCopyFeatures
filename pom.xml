@@ -12,7 +12,7 @@
 	<parent>
 		<groupId>org.gvsig</groupId>
 		<artifactId>org.gvsig.desktop.plugin</artifactId>
-		<version>2.0.100</version>
+		<version>2.0.150</version>
 	</parent>
 
 <build>
@@ -68,9 +68,11 @@
 			<groupId>org.gvsig</groupId>
 			<artifactId>org.gvsig.fmap.geometry.api</artifactId>
 		</dependency>
+		<!--
 		<dependency>
 			<groupId>org.gvsig</groupId>
-			<artifactId>org.gvsig.editing.app.mainplugin</artifactId>
-		</dependency>
+			<artifactId>org.gvsig.vectorediting.app.mainplugin</artifactId>
+			</dependency>
+			-->
 	</dependencies>
 </project>

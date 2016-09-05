@@ -4,9 +4,11 @@ import java.text.ParseException;
 
 import org.gvsig.fmap.dal.feature.Feature;
 import org.gvsig.fmap.geom.Geometry;
-import org.gvsig.fmap.geom.generalpath.util.Converter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GETX implements IFieldFillUtils {
+	private static final Logger logger = LoggerFactory.getLogger(GETX.class);
 
 	@Override
 	public void setArguments(String args) throws ParseException {
@@ -16,10 +18,12 @@ public class GETX implements IFieldFillUtils {
 	public Object execute(Feature feature) {
 		int idx = feature.getType().getDefaultGeometryAttributeIndex();
 		Geometry geom = feature.getGeometry(idx);
-
-		com.vividsolutions.jts.geom.Geometry point = Converter
-				.geometryToJts(geom);
-		return point.getCoordinate().x;
+		try {
+			return geom.centroid().getX();
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		}
+		return 0;
 	}
 
 }
