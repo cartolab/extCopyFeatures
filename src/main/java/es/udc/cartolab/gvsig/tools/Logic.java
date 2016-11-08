@@ -51,6 +51,7 @@ public class Logic {
 			sourceSet = sourceStore.getFeatureSet();
 			sourceIt = sourceSet.fastIterator();
 			int sourceGeomIdx = sourceType.getDefaultGeometryAttributeIndex();
+			int targetGeomIdx = targetType.getDefaultGeometryAttributeIndex();
 			while (sourceIt.hasNext()) {
 				Feature sourceFeat = (Feature) sourceIt.next();
 				sourceSelection = sourceStore.getFeatureSelection();
@@ -79,7 +80,7 @@ public class Logic {
 						targetFeat.set(tgtIdx, sourceValue);
 					}
 				}
-
+				targetFeat.setGeometry(targetGeomIdx, geom);
 				targetStore.insert(targetFeat);
 				copyCount++;
 			}
@@ -94,7 +95,7 @@ public class Logic {
 			DisposeUtils.dispose(sourceSelection);
 			DisposeUtils.dispose(sourceSet);
 		}
-		return _("n_features_copied");
+		return _("n_features_copied", copyCount);
 
 	}
 }
