@@ -5,6 +5,7 @@ import org.gvsig.andami.Launcher;
 import org.gvsig.andami.PluginServices;
 import org.gvsig.andami.plugins.Extension;
 import org.gvsig.andami.ui.mdiManager.IWindow;
+import org.gvsig.andami.ui.mdiManager.MDIManagerFactory;
 import org.gvsig.app.project.documents.view.gui.IView;
 
 public class CopyFeaturesExtension extends Extension {
@@ -24,7 +25,7 @@ public class CopyFeaturesExtension extends Extension {
 	@Override
 	public void execute(String actionCommand) {
 		CopyFeaturesDialog dialog = new CopyFeaturesDialog(view, defaultPath);
-		PluginServices.getMDIManager().addWindow(dialog);
+		MDIManagerFactory.getManager().addWindow(dialog);
 	}
 
 	@Override
@@ -37,7 +38,7 @@ public class CopyFeaturesExtension extends Extension {
 
 	@Override
 	public boolean isEnabled() {
-		IWindow iWindow = PluginServices.getMDIManager().getActiveWindow();
+		IWindow iWindow = MDIManagerFactory.getManager().getActiveWindow();
 		if (iWindow instanceof IView) {
 			view = (IView) iWindow;
 			return true;
