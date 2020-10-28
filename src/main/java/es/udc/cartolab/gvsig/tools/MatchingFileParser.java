@@ -15,8 +15,7 @@ import es.udc.cartolab.gvsig.copyfeature.fieldfillutils.IFieldFillUtils;
 import es.udc.cartolab.gvsig.tools.exceptions.ParseException;
 
 public class MatchingFileParser {
-	private static final Logger logger = LoggerFactory
-			.getLogger(MatchingFileParser.class);
+	private static final Logger logger = LoggerFactory.getLogger(MatchingFileParser.class);
 
 	private Map<String, String> matchFields;
 	private Map<String, IFieldFillUtils> calculatedFields;
@@ -49,8 +48,7 @@ public class MatchingFileParser {
 				String k = tokens[0].trim().toUpperCase();
 				String v = tokens[1].trim().toUpperCase();
 
-				if ((2 != tokens.length) || (0 == k.length())
-						|| (0 == v.length())) {
+				if ((2 != tokens.length) || (0 == k.length()) || (0 == v.length())) {
 					throw new ParseException("error_in_line", lineNumber);
 				}
 
@@ -60,15 +58,12 @@ public class MatchingFileParser {
 					try {
 						String args[] = v.split("[()]");
 						if (args.length > 2) {
-							throw new ParseException("error_in_line",
-									lineNumber);
+							throw new ParseException("error_in_line", lineNumber);
 						}
 
-						String className = "es.udc.cartolab.gvsig.copyfeature.fieldfillutils."
-								+ args[0];
+						String className = "es.udc.cartolab.gvsig.copyfeature.fieldfillutils." + args[0];
 						Class c = Class.forName(className);
-						IFieldFillUtils util = (IFieldFillUtils) c
-								.newInstance();
+						IFieldFillUtils util = (IFieldFillUtils) c.newInstance();
 						if (args.length == 2) {
 							util.setArguments(args[1]);
 						}
@@ -95,23 +90,20 @@ public class MatchingFileParser {
 		}
 	}
 
-	public Map<Integer, IFieldFillUtils> getCalculatedFields(FeatureType target)
-			throws ParseException {
+	public Map<Integer, IFieldFillUtils> getCalculatedFields(FeatureType target) throws ParseException {
 		Map<Integer, IFieldFillUtils> calculatedFieldsMap = new HashMap<Integer, IFieldFillUtils>();
 
 		for (String targetField : calculatedFields.keySet()) {
 			int tgtIdx = target.getIndex(targetField);
 			if (-1 == tgtIdx) {
-				throw new ParseException("field_not_exists_in_target",
-						targetField);
+				throw new ParseException("field_not_exists_in_target", targetField);
 			}
 			calculatedFieldsMap.put(tgtIdx, calculatedFields.get(targetField));
 		}
 		return calculatedFieldsMap;
 	}
 
-	public Map<Integer, Integer> getMatching(FeatureType source,
-			FeatureType target) throws ParseException {
+	public Map<Integer, Integer> getMatching(FeatureType source, FeatureType target) throws ParseException {
 
 		Map<Integer, Integer> tgtSrcIdxMap = new HashMap<Integer, Integer>();
 
@@ -125,13 +117,11 @@ public class MatchingFileParser {
 			int tgt_idx = target.getIndex(tgt_field);
 
 			if (src_idx == -1) {
-				throw new ParseException("field_not_exists_in_source",
-						src_field);
+				throw new ParseException("field_not_exists_in_source", src_field);
 			}
 
 			if (tgt_idx == -1) {
-				throw new ParseException("field_not_exists_in_target",
-						tgt_field);
+				throw new ParseException("field_not_exists_in_target", tgt_field);
 			}
 			tgtSrcIdxMap.put(tgt_idx, src_idx);
 

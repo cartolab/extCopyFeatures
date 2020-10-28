@@ -26,8 +26,7 @@ public class Logic {
 		this.parser = parser;
 	}
 
-	public String copyData(FLyrVect sourceLayer, FLyrVect targetLayer,
-			boolean onlySelected) throws Exception {
+	public String copyData(FLyrVect sourceLayer, FLyrVect targetLayer, boolean onlySelected) throws Exception {
 		FeatureStore targetStore = null;
 		FeatureSet sourceSet = null;
 		FeatureSelection sourceSelection = null;
@@ -41,10 +40,8 @@ public class Logic {
 			FeatureType sourceType = sourceStore.getDefaultFeatureType();
 			FeatureType targetType = targetStore.getDefaultFeatureType();
 
-			Map<Integer, Integer> tgtSrcIdx = parser.getMatching(sourceType,
-					targetType);
-			Map<Integer, IFieldFillUtils> calculatedFields = parser
-					.getCalculatedFields(targetType);
+			Map<Integer, Integer> tgtSrcIdx = parser.getMatching(sourceType, targetType);
+			Map<Integer, IFieldFillUtils> calculatedFields = parser.getCalculatedFields(targetType);
 
 			targetStore.edit();
 
@@ -63,10 +60,8 @@ public class Logic {
 				if (geom.getGeometryType() != targetLayer.getGeometryType()) {
 					continue;
 				}
-				if (sourceLayer.getProjection() != sourceLayer.getMapContext()
-						.getProjection()) {
-					geom.reProject(sourceLayer.getProjection().getCT(
-							sourceLayer.getMapContext().getProjection()));
+				if (sourceLayer.getProjection() != sourceLayer.getMapContext().getProjection()) {
+					geom.reProject(sourceLayer.getProjection().getCT(sourceLayer.getMapContext().getProjection()));
 				}
 				EditableFeature targetFeat = targetStore.createNewFeature();
 				for (int tgtIdx : tgtSrcIdx.keySet()) {

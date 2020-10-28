@@ -34,8 +34,7 @@ import es.icarto.gvsig.commons.gvsig2.Value;
  */
 public class FOREIGNVALUE implements IFieldFillUtils {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(FOREIGNVALUE.class);
+	private static final Logger logger = LoggerFactory.getLogger(FOREIGNVALUE.class);
 
 	private String commonField;
 	private SelectableDataSource tableSDS;
@@ -51,8 +50,7 @@ public class FOREIGNVALUE implements IFieldFillUtils {
 			throw new ParseException("Bad Syntax", 0);
 		}
 
-		ProjectExtension pe = (ProjectExtension) PluginServices
-				.getExtension(ProjectExtension.class);
+		ProjectExtension pe = (ProjectExtension) PluginServices.getExtension(ProjectExtension.class);
 		List<Document> documents = pe.getProject().getDocuments();
 		for (Document doc : documents) {
 			if (doc.getName().compareToIgnoreCase(tokens[1]) == 0) {
@@ -62,10 +60,8 @@ public class FOREIGNVALUE implements IFieldFillUtils {
 						// doc).getAssociatedTable().getRecordset();
 						TableDocument d = (TableDocument) doc;
 						tableSDS = new SelectableDataSource(d.getStore());
-						foreignKeyTableFieldIndex = tableSDS
-								.getFieldIndexByName(tokens[2]);
-						tableFieldIndex = tableSDS
-								.getFieldIndexByName(tokens[0]);
+						foreignKeyTableFieldIndex = tableSDS.getFieldIndexByName(tokens[2]);
+						tableFieldIndex = tableSDS.getFieldIndexByName(tokens[0]);
 					} catch (DataException e) {
 						logger.error(e.getMessage(), e);
 						throw new ParseException("Document not exists", 0);
@@ -73,7 +69,7 @@ public class FOREIGNVALUE implements IFieldFillUtils {
 					commonField = tokens[2];
 
 					// baseQuery = "select " + tokens[0] + " from "
-					// + tableSDS.getName() + "  where " + commonField
+					// + tableSDS.getName() + " where " + commonField
 					// + "='";
 				}
 			}
@@ -91,8 +87,7 @@ public class FOREIGNVALUE implements IFieldFillUtils {
 			// Value foreignKeyTableValue = tableSDS.getFieldValue(i,
 			// foreignKeyTableFieldIndex);
 
-			if (tableRow[foreignKeyTableFieldIndex].toString().equals(
-					stringSourceValue)) {
+			if (tableRow[foreignKeyTableFieldIndex].toString().equals(stringSourceValue)) {
 				value = tableRow[tableFieldIndex];
 				break;
 			}

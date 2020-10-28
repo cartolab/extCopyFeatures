@@ -2,7 +2,6 @@ package es.udc.cartolab.gvsig.tools;
 
 import org.gvsig.andami.IconThemeHelper;
 import org.gvsig.andami.Launcher;
-import org.gvsig.andami.PluginServices;
 import org.gvsig.andami.plugins.Extension;
 import org.gvsig.andami.ui.mdiManager.IWindow;
 import org.gvsig.andami.ui.mdiManager.MDIManagerFactory;
